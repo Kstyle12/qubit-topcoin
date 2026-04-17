@@ -73,7 +73,6 @@ def open_wallet_flow():
     print_header()
     print("=== OPEN WALLET ===\n")
 
-    # List available wallet files
     wallet_files = [f for f in os.listdir('.') if f.endswith('.qtp')]
 
     if not wallet_files:
@@ -89,7 +88,6 @@ def open_wallet_flow():
 
     choice = input("Enter wallet name or number: ")
 
-    # Allow selecting by number
     try:
         idx = int(choice) - 1
         if 0 <= idx < len(wallet_files):
@@ -142,8 +140,6 @@ def check_balance_flow(wallet):
         data    = response.json()
         balance = data.get("balance", 0)
         print(f"\n✓ Balance: {balance} QTP")
-
-        # Convert to cori
         cori = int(balance * 100000000)
         print(f"         {cori} cori\n")
 
@@ -180,6 +176,27 @@ def send_qtp_flow(wallet):
         input("Press Enter to continue...")
         return
 
+    # Check balance before signing
+    print("\nChecking balance...")
+    try:
+        response = requests.get(
+            f"{NODE_URL}/balance/{wallet['address']}",
+            timeout=5
+        )
+        balance = response.json().get("balance", 0)
+        if balance < amount:
+            print(f"\n✗ Insufficient funds.")
+            print(f"  Balance:  {balance} QTP")
+            print(f"  Required: {amount} QTP\n")
+            input("Press Enter to continue...")
+            return
+        print(f"  Balance: {balance} QTP — sufficient")
+    except Exception:
+        print("\n✗ Could not verify balance. Node may be offline.")
+        confirm_anyway = input("Send anyway? (yes/no): ")
+        if confirm_anyway.lower() != "yes":
+            return
+
     print(f"\nYou are about to send {amount} QTP to:")
     print(f"  {recipient}")
     confirm = input("\nConfirm? (yes/no): ")
@@ -213,7 +230,6 @@ def main():
         clear()
         print_header()
 
-        # Show currently open wallet if any
         if wallet:
             print(f"  Open wallet: {wallet['address'][:20]}...\n")
         else:
