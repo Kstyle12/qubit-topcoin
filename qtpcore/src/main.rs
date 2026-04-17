@@ -1,63 +1,69 @@
-use pqcrypto_falcon::falcon512;
-use pqcrypto_traits::sign::{PublicKey, SecretKey};
-use sha3::{Digest, Sha3_256};
+mod wallet;
+mod transaction;
 
-fn generate_wallet() -> (String, String, String) {
-    let (public_key, secret_key) = falcon512::keypair();
-
-    let mut hasher = Sha3_256::new();
-    hasher.update(public_key.as_bytes());
-    let hash = hasher.finalize();
-
-    let address_bytes = &hash[hash.len() - 20..];
-    let mut versioned = vec![0x26u8];
-    versioned.extend_from_slice(address_bytes);
-
-    let mut hasher2 = Sha3_256::new();
-    hasher2.update(&versioned);
-    let first_hash = hasher2.finalize();
-
-    let mut hasher3 = Sha3_256::new();
-    hasher3.update(&first_hash);
-    let second_hash = hasher3.finalize();
-
-    let checksum = &second_hash[..4];
-    let mut full_address = versioned.clone();
-    full_address.extend_from_slice(checksum);
-    let address = bs58::encode(&full_address).into_string();
-
-    let public_key_hex = hex::encode(public_key.as_bytes());
-    let secret_key_hex = hex::encode(secret_key.as_bytes());
-
-    (address, public_key_hex, secret_key_hex)
-}
+use wallet::Wallet;
+use transaction::{TransactionData, sign_transaction, verify_transaction};
 
 fn main() {
     println!("=========================================");
-    println!("  QTP WALLET GENERATOR (Rust)");
+    println!("  QTP CORE NODE (Rust)");
     println!("  Quantum-Resistant. For Everyone. Forever.");
     println!("=========================================");
     println!();
 
-    println!("Generating FALCON-512 wallet...");
+    // --- WALLET TEST ---
+    println!("=== WALLET GENERATION ===");
+    let sender    = Wallet::new();
+    let recipient = Wallet::new();
+    println!("Sender:    {}", sender.address);
+    println!("Recipient: {}", recipient.address);
     println!();
 
-    let (address, public_key, secret_key) = generate_wallet();
+    // --- TRANSACTION TEST ---
+    println!("=== TRANSACTION SIGNING ===");
 
-    println!("Address:     {}", address);
-    println!("Public Key:  {}...", &public_key[..40]);
-    println!("Private Key: {}...", &secret_key[..40]);
-    println!();
-    println!("WARNING: Never share your private key with anyone. Ever.");
+    // Amount in cori: 10 QTP = 1,000,000,000 cori
+    // Fee in cori: 0.001 QTP = 100,000 cori
+    let tx_data = TransactionData::new(
+        sender.address.clone(),
+        recipient.address.clone(),
+        1_000_000_000,
+        100_000,
+    );
+
+    println!("Sending:   {} cori (10 QTP)", tx_data.amount);
+    println!("Fee:       {} cori (0.001 QTP)", tx_data.fee);
+    println!("Hash:      {}", tx_data.hash());
     println!();
 
-    println!("Generating second wallet to prove uniqueness...");
-    let (address2, _, _) = generate_wallet();
-    println!("Address 2:   {}", address2);
+    // Sign with sender's secret key
+    println!("Signing with FALCON-512...");
+    let signed_tx = sign_transaction(
+        &tx_data,
+        &sender.secret_key,
+        &sender.public_key,
+    ).expect("Signing failed");
+
+    println!("Signature: {}...", &signed_tx.signature[..40]);
     println!();
 
-    if address != address2 {
-        println!("Wallets are unique - cryptographic randomness confirmed");
+    // Verify
+    println!("=== VERIFICATION ===");
+    let valid = verify_transaction(&signed_tx);
+    println!("Signature valid: {}", valid);
+
+    // Tamper test
+    println!();
+    println!("=== TAMPER DETECTION ===");
+    let mut tampered = signed_tx.clone();
+    tampered.data.amount = 999_999_999_999;
+    let tampered_valid = verify_transaction(&tampered);
+    println!("Tampered valid:  {}", tampered_valid);
+    println!();
+
+    if valid && !tampered_valid {
+        println!("✓ FALCON-512 transaction security confirmed");
+        println!("✓ Tamper detection working perfectly");
     }
 
     println!();
