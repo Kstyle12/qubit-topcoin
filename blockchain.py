@@ -6,8 +6,8 @@ from block import Block
 class Blockchain:
     def __init__(self):
         self.difficulty          = 4
-        self.target_block_time   = 150  # 2.5 minutes in seconds
-        self.adjustment_interval = 10   # adjust every 10 blocks
+        self.target_block_time   = 150
+        self.adjustment_interval = 10
         self.mempool             = []
         self.block_reward        = 50.0
         self.chain               = [self.create_genesis_block()]
@@ -20,6 +20,7 @@ class Blockchain:
                 "sender":    "GENESIS",
                 "recipient": "GENESIS",
                 "amount":    0,
+                "fee":       0,
                 "note":      "Qubit TopCoin — For everyone. Forever."
             }],
             previous_hash= "0" * 64
@@ -38,33 +39,44 @@ class Blockchain:
                     balance += tx["amount"]
                 if tx["sender"] == address:
                     balance -= tx["amount"]
+                # Miner collects fees from all transactions
+                if tx.get("sender") not in ["NETWORK", "GENESIS"]:
+                    if tx["recipient"] == address:
+                        balance += tx.get("fee", 0)
+                    if tx["sender"] == address:
+                        balance -= tx.get("fee", 0)
         return balance
 
     def add_transaction(self, transaction):
+        # Sort mempool by fee — highest fee first
         self.mempool.append(transaction)
-        print(f"  Transaction added to mempool. "
-              f"Pending transactions: {len(self.mempool)}")
+        self.mempool.sort(
+            key=lambda x: x.get("fee", 0),
+            reverse=True
+        )
+        print(f"  Transaction added to mempool "
+              f"(fee: {transaction.get('fee', 0)} QTP). "
+              f"Pending: {len(self.mempool)}")
+
+    def get_total_fees(self, transactions):
+        # Sum all fees in a block — paid to the miner
+        total = 0.0
+        for tx in transactions:
+            if tx.get("sender") not in ["NETWORK", "GENESIS"]:
+                total += tx.get("fee", 0)
+        return total
 
     def get_adjusted_difficulty(self):
-        # Only adjust every 10 blocks
         if len(self.chain) % self.adjustment_interval != 0:
             return self.difficulty
-
-        # Need at least one full interval to calculate
         if len(self.chain) < self.adjustment_interval:
             return self.difficulty
 
-        # Get timestamps of last adjustment window
-        last_block  = self.chain[-1]
-        first_block = self.chain[-self.adjustment_interval]
-
-        # How long did the last 10 blocks actually take
+        last_block    = self.chain[-1]
+        first_block   = self.chain[-self.adjustment_interval]
         actual_time   = last_block.timestamp - first_block.timestamp
-
-        # How long should they have taken
         expected_time = self.target_block_time * self.adjustment_interval
 
-        # Adjust difficulty up or down
         if actual_time < expected_time / 2:
             new_difficulty = self.difficulty + 1
             print(f"  Difficulty increased to {new_difficulty} "
@@ -84,19 +96,22 @@ class Blockchain:
         return new_difficulty
 
     def mine_pending_transactions(self, miner_address):
-        # Adjust difficulty before mining
-        self.difficulty = self.get_adjusted_difficulty()
+        self.difficulty    = self.get_adjusted_difficulty()
+        current_reward     = self.get_current_reward()
+        total_fees         = self.get_total_fees(self.mempool)
+        total_miner_payout = current_reward + total_fees
 
-        # Create mining reward transaction
-        current_reward = self.get_current_reward()
+        # Reward transaction includes block reward AND all fees
         reward_tx = {
             "sender":    "NETWORK",
             "recipient": miner_address,
-            "amount":    current_reward,
-            "note":      f"Block {len(self.chain)} mining reward"
+            "amount":    total_miner_payout,
+            "fee":       0,
+            "note":      f"Block {len(self.chain)} reward "
+                         f"({current_reward} QTP + "
+                         f"{total_fees:.4f} QTP fees)"
         }
 
-        # Bundle reward and mempool transactions
         transactions = [reward_tx] + self.mempool
 
         new_block = Block(
@@ -113,8 +128,9 @@ class Blockchain:
         self.mempool = []
 
         print(f"  Block {new_block.index} added to chain.")
-        print(f"  Miner {miner_address[:20]}... "
-              f"earned {current_reward} QTP")
+        print(f"  Miner earned {current_reward} QTP reward "
+              f"+ {total_fees:.4f} QTP fees "
+              f"= {total_miner_payout:.4f} QTP total")
         return new_block
 
     def get_current_reward(self):
@@ -156,7 +172,14 @@ print("Adding transactions to mempool...")
 qtpchain.add_transaction({
     "sender":    miner_address,
     "recipient": sender_address,
-    "amount":    12.5
+    "amount":    12.5,
+    "fee":       0.005
+})
+qtpchain.add_transaction({
+    "sender":    sender_address,
+    "recipient": miner_address,
+    "amount":    3.0,
+    "fee":       0.001
 })
 
 qtpchain.mine_pending_transactions(miner_address)
@@ -166,11 +189,6 @@ print(f"Balance of sender: {qtpchain.get_balance(sender_address)} QTP")
 
 valid = qtpchain.is_chain_valid()
 print(f"Chain valid: {valid}")
-
-print("\nTampering with block 1...")
-qtpchain.chain[1].transactions[0]["amount"] = 999999.0
-valid_after = qtpchain.is_chain_valid()
-print(f"Chain valid after tampering: {valid_after}")
 
 print("")
 print("=" * 55)

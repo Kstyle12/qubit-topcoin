@@ -1,11 +1,10 @@
 import sys
 import json
 import requests
-import threading
 from flask import Flask, request, jsonify
 from blockchain import Blockchain
 from block import Block
-from transaction import create_transaction, verify_transaction
+from transaction import verify_transaction
 
 app = Flask(__name__)
 qtpchain = Blockchain()
@@ -29,26 +28,32 @@ def new_transaction():
     required = ["sender", "recipient", "amount", "signature", "public_key"]
     if not all(k in data for k in required):
         return jsonify({"error": "Missing transaction fields"}), 400
+
     is_valid = verify_transaction(
         {
             "transaction": {
                 "sender":    data["sender"],
                 "recipient": data["recipient"],
                 "amount":    data["amount"],
+                "fee":       data.get("fee", 0.001),
                 "timestamp": data["timestamp"]
             },
             "signature": data["signature"]
         },
         data["public_key"]
     )
+
     if not is_valid:
         return jsonify({"error": "Invalid signature — transaction rejected"}), 400
+
     qtpchain.add_transaction({
         "sender":    data["sender"],
         "recipient": data["recipient"],
         "amount":    data["amount"],
+        "fee":       data.get("fee", 0.001),
         "timestamp": data["timestamp"]
     })
+
     broadcast_transaction(data)
     return jsonify({"message": "Transaction added to mempool"}), 201
 
@@ -128,8 +133,8 @@ def sync_with_peers():
 
     for peer in peers:
         try:
-            response = requests.get(f"{peer}/chain", timeout=3)
-            data     = response.json()
+            response    = requests.get(f"{peer}/chain", timeout=3)
+            data        = response.json()
             peer_length = data["length"]
             peer_chain  = data["chain"]
             if peer_length > max_length:
