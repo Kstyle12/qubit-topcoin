@@ -1,10 +1,11 @@
 mod wallet;
 mod transaction;
 mod block;
+mod blockchain;
 
 use wallet::Wallet;
-use transaction::{TransactionData, sign_transaction, verify_transaction};
-use block::Block;
+use transaction::{TransactionData, sign_transaction};
+use blockchain::Blockchain;
 
 fn main() {
     println!("=========================================");
@@ -13,66 +14,65 @@ fn main() {
     println!("=========================================");
     println!();
 
-    // --- WALLET TEST ---
-    println!("=== WALLET GENERATION ===");
+    println!("=== GENERATING WALLETS ===");
+    let miner     = Wallet::new();
     let sender    = Wallet::new();
     let recipient = Wallet::new();
+    println!("Miner:     {}", miner.address);
     println!("Sender:    {}", sender.address);
     println!("Recipient: {}", recipient.address);
     println!();
 
-    // --- TRANSACTION TEST ---
-    println!("=== TRANSACTION SIGNING ===");
+    println!("=== INITIALIZING BLOCKCHAIN ===");
+    let mut chain = Blockchain::new();
+    println!("Genesis block created. Height: {}", chain.height());
+    println!();
+
+    println!("=== CREATING TRANSACTION ===");
     let tx_data = TransactionData::new(
         sender.address.clone(),
         recipient.address.clone(),
         1_000_000_000,
         100_000,
     );
-
     let signed_tx = sign_transaction(
         &tx_data,
         &sender.secret_key,
         &sender.public_key,
     ).expect("Signing failed");
-
-    println!("Transaction signed: {}", &signed_tx.hash[..20]);
-    println!("Signature valid:    {}", verify_transaction(&signed_tx));
+    println!("Transaction signed: {}...", &signed_tx.hash[..20]);
+    chain.add_transaction(signed_tx);
     println!();
 
-    // --- BLOCK TEST ---
-    println!("=== BLOCK MINING ===");
-
-    // Mine genesis block at difficulty 4
-    let genesis = Block::genesis(4);
-    println!("Genesis valid: {}", genesis.is_valid());
+    println!("=== MINING BLOCK 1 ===");
+    chain.mine_pending_transactions(&miner.address, &miner);
+    println!("Chain height: {}", chain.height());
     println!();
 
-    // Mine block 1 containing our transaction
-    println!("Mining block 1 with transaction...");
-    let mut block_1 = Block::new(
-        1,
-        vec![signed_tx.clone()],
-        genesis.hash.clone(),
-    );
-    block_1.mine(4);
-    println!("Block 1 valid: {}", block_1.is_valid());
+    println!("=== BALANCES ===");
+    let miner_bal     = chain.get_balance(&miner.address);
+    let sender_bal    = chain.get_balance(&sender.address);
+    let recipient_bal = chain.get_balance(&recipient.address);
+    println!("Miner:     {} cori ({:.8} QTP)",
+        miner_bal, miner_bal as f64 / 100_000_000.0);
+    println!("Sender:    {} cori ({:.8} QTP)",
+        sender_bal, sender_bal as f64 / 100_000_000.0);
+    println!("Recipient: {} cori ({:.8} QTP)",
+        recipient_bal, recipient_bal as f64 / 100_000_000.0);
     println!();
 
-    // Tamper detection
+    println!("=== CHAIN VALIDATION ===");
+    let valid = chain.is_valid();
+    println!("Chain valid: {}", valid);
+    println!();
+
     println!("=== TAMPER DETECTION ===");
-    println!("Block 1 valid before tamper: {}", block_1.is_valid());
-    block_1.transactions[0].data.amount = 999_999_999_999;
-    println!("Block 1 valid after tamper:  {}", block_1.is_valid());
-    println!();
-
-    // Chain link verification
-    println!("=== CHAIN LINK VERIFICATION ===");
-    let chain_valid = block_1.previous_hash == genesis.hash;
-    println!("Block 1 correctly links to genesis: {}", chain_valid);
+    chain.chain[1].transactions[0].data.amount = 999_999_999_999;
+    let valid_after = chain.is_valid();
+    println!("Chain valid after tamper: {}", valid_after);
 
     println!();
     println!("=========================================");
-    println!("  ALL SYSTEMS OPERATIONAL");
+    println!("  BLOCKCHAIN COMPLETE");
     println!("=========================================");
 }
