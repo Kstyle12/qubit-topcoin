@@ -1,6 +1,7 @@
 use crate::block::Block;
 use crate::transaction::{SignedTransaction, TransactionData};
 use crate::wallet::Wallet;
+use crate::storage::{save_chain, load_chain};
 
 const INITIAL_REWARD: u64      = 5_000_000_000;
 const HALVING_INTERVAL: u64    = 210_000;
@@ -17,9 +18,23 @@ impl Blockchain {
     pub fn new() -> Self {
         let difficulty = 4;
         println!("Initializing QTP blockchain...");
+
+        if let Some(saved_chain) = load_chain() {
+            let height = saved_chain.len();
+            println!("  Loaded existing chain with {} blocks", height);
+            return Blockchain {
+                chain:      saved_chain,
+                mempool:    vec![],
+                difficulty,
+            };
+        }
+
         let genesis = Block::genesis(difficulty);
+        let chain   = vec![genesis];
+        save_chain(&chain);
+
         Blockchain {
-            chain:      vec![genesis],
+            chain,
             mempool:    vec![],
             difficulty,
         }
@@ -36,10 +51,7 @@ impl Blockchain {
     pub fn add_transaction(&mut self, tx: SignedTransaction) {
         self.mempool.push(tx);
         self.mempool.sort_by(|a, b| b.data.fee.cmp(&a.data.fee));
-        println!(
-            "  Transaction added to mempool. Pending: {}",
-            self.mempool.len()
-        );
+        println!("  Transaction added to mempool. Pending: {}", self.mempool.len());
     }
 
     pub fn get_balance(&self, address: &str) -> u64 {
@@ -137,23 +149,20 @@ impl Blockchain {
             reward, fees, total_payout);
 
         self.chain.push(new_block);
+        save_chain(&self.chain);
     }
 
     pub fn is_valid(&self) -> bool {
-        println!("\nValidating blockchain...");
         for i in 1..self.chain.len() {
             let current  = &self.chain[i];
             let previous = &self.chain[i - 1];
             if !current.is_valid() {
-                println!("  INVALID: Block {} hash corrupted", i);
                 return false;
             }
             if current.previous_hash != previous.hash {
-                println!("  INVALID: Block {} disconnected from chain", i);
                 return false;
             }
         }
-        println!("  Chain valid — {} blocks verified", self.chain.len());
         true
     }
 }
