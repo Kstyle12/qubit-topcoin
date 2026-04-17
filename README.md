@@ -105,7 +105,8 @@ core concepts. It is not production software.
 The full QTP whitepaper covering technical design, tokenomics, consensus 
 mechanism, and roadmap is available in this repository.
 
-[Read the QTP Whitepaper](./QTP_Whitepaper.pdf)
+[QTP_Whitepaper.pdf](https://github.com/user-attachments/files/26834952/QTP_Whitepaper.pdf)
+
 
 ---
 
