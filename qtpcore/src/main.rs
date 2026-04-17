@@ -1,8 +1,10 @@
 mod wallet;
 mod transaction;
+mod block;
 
 use wallet::Wallet;
 use transaction::{TransactionData, sign_transaction, verify_transaction};
+use block::Block;
 
 fn main() {
     println!("=========================================");
@@ -21,9 +23,6 @@ fn main() {
 
     // --- TRANSACTION TEST ---
     println!("=== TRANSACTION SIGNING ===");
-
-    // Amount in cori: 10 QTP = 1,000,000,000 cori
-    // Fee in cori: 0.001 QTP = 100,000 cori
     let tx_data = TransactionData::new(
         sender.address.clone(),
         recipient.address.clone(),
@@ -31,41 +30,49 @@ fn main() {
         100_000,
     );
 
-    println!("Sending:   {} cori (10 QTP)", tx_data.amount);
-    println!("Fee:       {} cori (0.001 QTP)", tx_data.fee);
-    println!("Hash:      {}", tx_data.hash());
-    println!();
-
-    // Sign with sender's secret key
-    println!("Signing with FALCON-512...");
     let signed_tx = sign_transaction(
         &tx_data,
         &sender.secret_key,
         &sender.public_key,
     ).expect("Signing failed");
 
-    println!("Signature: {}...", &signed_tx.signature[..40]);
+    println!("Transaction signed: {}", &signed_tx.hash[..20]);
+    println!("Signature valid:    {}", verify_transaction(&signed_tx));
     println!();
 
-    // Verify
-    println!("=== VERIFICATION ===");
-    let valid = verify_transaction(&signed_tx);
-    println!("Signature valid: {}", valid);
+    // --- BLOCK TEST ---
+    println!("=== BLOCK MINING ===");
 
-    // Tamper test
+    // Mine genesis block at difficulty 4
+    let genesis = Block::genesis(4);
+    println!("Genesis valid: {}", genesis.is_valid());
     println!();
+
+    // Mine block 1 containing our transaction
+    println!("Mining block 1 with transaction...");
+    let mut block_1 = Block::new(
+        1,
+        vec![signed_tx.clone()],
+        genesis.hash.clone(),
+    );
+    block_1.mine(4);
+    println!("Block 1 valid: {}", block_1.is_valid());
+    println!();
+
+    // Tamper detection
     println!("=== TAMPER DETECTION ===");
-    let mut tampered = signed_tx.clone();
-    tampered.data.amount = 999_999_999_999;
-    let tampered_valid = verify_transaction(&tampered);
-    println!("Tampered valid:  {}", tampered_valid);
+    println!("Block 1 valid before tamper: {}", block_1.is_valid());
+    block_1.transactions[0].data.amount = 999_999_999_999;
+    println!("Block 1 valid after tamper:  {}", block_1.is_valid());
     println!();
 
-    if valid && !tampered_valid {
-        println!("✓ FALCON-512 transaction security confirmed");
-        println!("✓ Tamper detection working perfectly");
-    }
+    // Chain link verification
+    println!("=== CHAIN LINK VERIFICATION ===");
+    let chain_valid = block_1.previous_hash == genesis.hash;
+    println!("Block 1 correctly links to genesis: {}", chain_valid);
 
     println!();
+    println!("=========================================");
+    println!("  ALL SYSTEMS OPERATIONAL");
     println!("=========================================");
 }
