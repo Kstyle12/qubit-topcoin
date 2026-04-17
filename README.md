@@ -1,3 +1,4 @@
+[QTP_Whitepaper.pdf](https://github.com/user-attachments/files/26834896/QTP_Whitepaper.pdf)
 # Qubit TopCoin (QTP)
 
 > **Quantum-hardened digital gold. For everyone. Forever.**
