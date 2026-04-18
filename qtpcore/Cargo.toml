@@ -18,6 +18,10 @@ path = "src/bin/send_tx.rs"
 name = "qtpwallet"
 path = "src/bin/wallet_cli.rs"
 
+[[bin]]
+name = "miner"
+path = "src/bin/miner.rs"
+
 [dependencies]
 pqcrypto-falcon = "0.3"
 pqcrypto-traits = "0.3"
@@ -29,6 +33,7 @@ hex = "0.4"
 chrono = "0.4"
 rand = "0.8"
 actix-web = "4"
+actix-cors = "0.7"
 reqwest = { version = "0.11", features = ["json", "blocking"] }
 tokio = { version = "1", features = ["full"] }
 aes-gcm = "0.10"
@@ -39,6 +44,3 @@ rpassword = "7"
 
 [build-dependencies]
 cc = "1.0"
-
-[dependencies.actix-cors]
-version = "0.7"
