@@ -8,8 +8,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 pub struct TransactionData {
     pub sender:    String,
     pub recipient: String,
-    pub amount:    u64,      // Amount in cori (1 QTP = 100,000,000 cori)
-    pub fee:       u64,      // Fee in cori
+    pub amount:    u64,
+    pub fee:       u64,
     pub timestamp: u64,
 }
 
@@ -32,12 +32,11 @@ impl TransactionData {
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_secs();
-
         TransactionData { sender, recipient, amount, fee, timestamp }
     }
 
-    pub fn to_bytes(&self) -> Vec<u8> {
-        // Serialize deterministically for signing
+    pub fn to_bytes_rust(&self) -> Vec<u8> {
+        // Rust native format — colon separated
         let s = format!(
             "{}:{}:{}:{}:{}",
             self.sender,
@@ -49,9 +48,23 @@ impl TransactionData {
         s.into_bytes()
     }
 
+    pub fn to_bytes_python(&self) -> Vec<u8> {
+        // Python format — sorted JSON keys
+        // Matches json.dumps(transaction, sort_keys=True)
+        let json = format!(
+            "{{\"amount\": {}, \"fee\": {}, \"recipient\": \"{}\", \"sender\": \"{}\", \"timestamp\": {}}}",
+            self.amount,
+            self.fee,
+            self.recipient,
+            self.sender,
+            self.timestamp
+        );
+        json.into_bytes()
+    }
+
     pub fn hash(&self) -> String {
         let mut hasher = Sha3_256::new();
-        hasher.update(&self.to_bytes());
+        hasher.update(&self.to_bytes_rust());
         hex::encode(hasher.finalize())
     }
 }
@@ -61,16 +74,12 @@ pub fn sign_transaction(
     secret_key: &[u8],
     public_key: &[u8],
 ) -> Result<SignedTransaction, String> {
-    // Reconstruct secret key from bytes
     let sk = falcon512::SecretKey::from_bytes(secret_key)
         .map_err(|e| format!("Invalid secret key: {:?}", e))?;
 
-    // Sign the transaction bytes
-    let tx_bytes  = data.to_bytes();
+    let tx_bytes  = data.to_bytes_rust();
     let signed_msg = falcon512::sign(&tx_bytes, &sk);
-
-    // Extract just the signature bytes
-    let sig_bytes = signed_msg.as_bytes().to_vec();
+    let sig_bytes  = signed_msg.as_bytes().to_vec();
 
     Ok(SignedTransaction {
         data:       data.clone(),
@@ -81,7 +90,6 @@ pub fn sign_transaction(
 }
 
 pub fn verify_transaction(signed_tx: &SignedTransaction) -> bool {
-    // Reconstruct public key
     let pk_bytes = match hex::decode(&signed_tx.public_key) {
         Ok(b)  => b,
         Err(_) => return false,
@@ -92,7 +100,6 @@ pub fn verify_transaction(signed_tx: &SignedTransaction) -> bool {
         Err(_) => return false,
     };
 
-    // Reconstruct signed message
     let sig_bytes = match hex::decode(&signed_tx.signature) {
         Ok(b)  => b,
         Err(_) => return false,
@@ -103,9 +110,55 @@ pub fn verify_transaction(signed_tx: &SignedTransaction) -> bool {
         Err(_) => return false,
     };
 
-    // Verify — returns the original message if valid
+    // Try Rust format first
     match falcon512::open(&signed_msg, &pk) {
-        Ok(msg) => msg == signed_tx.data.to_bytes(),
-        Err(_)  => false,
+        Ok(msg) => {
+            if msg == signed_tx.data.to_bytes_rust() {
+                return true;
+            }
+            // Try Python format
+            if msg == signed_tx.data.to_bytes_python() {
+                return true;
+            }
+            false
+        }
+        Err(_) => false,
     }
+}
+
+pub fn verify_detached(
+    message:    &[u8],
+    signature:  &[u8],
+    public_key: &[u8],
+) -> bool {
+    // liboqs produces detached signatures
+    // We reconstruct a signed message by prepending the signature to the message
+    // pqcrypto-falcon signed message format: signature_bytes + message_bytes
+    let pk = match falcon512::PublicKey::from_bytes(public_key) {
+        Ok(k)  => k,
+        Err(_) => return false,
+    };
+
+    // Try treating the whole thing as a signed message directly
+    let mut signed_msg_bytes = signature.to_vec();
+    signed_msg_bytes.extend_from_slice(message);
+
+    if let Ok(signed_msg) = falcon512::SignedMessage::from_bytes(&signed_msg_bytes) {
+        if let Ok(recovered) = falcon512::open(&signed_msg, &pk) {
+            if recovered == message {
+                return true;
+            }
+        }
+    }
+
+    // Try signature alone as signed message
+    if let Ok(signed_msg) = falcon512::SignedMessage::from_bytes(signature) {
+        if let Ok(recovered) = falcon512::open(&signed_msg, &pk) {
+            if recovered == message {
+                return true;
+            }
+        }
+    }
+
+    false
 }

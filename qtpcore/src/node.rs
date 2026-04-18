@@ -1,20 +1,18 @@
-use actix_web::{web, App, HttpServer, HttpResponse, middleware};
+use actix_web::{web, App, HttpServer, HttpResponse};
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
 use crate::blockchain::Blockchain;
 use crate::wallet::Wallet;
-use crate::transaction::{TransactionData, SignedTransaction, sign_transaction, verify_transaction};
+use crate::transaction::{TransactionData, SignedTransaction, verify_transaction, verify_detached};
+use crate::sync::sync_with_peers;
 
-// Shared state — the blockchain protected by a mutex
-// so multiple requests can't corrupt it simultaneously
 pub struct NodeState {
-    pub chain:         Blockchain,
-    pub peers:         Vec<String>,
-    pub miner_wallet:  Wallet,
+    pub chain:        Blockchain,
+    pub peers:        Vec<String>,
+    pub miner_wallet: Wallet,
 }
 
-// Request/response types
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct TransactionRequest {
     pub sender:     String,
     pub recipient:  String,
@@ -47,11 +45,9 @@ pub struct BalanceResponse {
     pub qtp:     f64,
 }
 
-// GET /status
 async fn get_status(state: web::Data<Mutex<NodeState>>) -> HttpResponse {
-    let node = state.lock().unwrap();
+    let node   = state.lock().unwrap();
     let latest = node.chain.latest_block();
-
     HttpResponse::Ok().json(StatusResponse {
         status:      "running".to_string(),
         blocks:      node.chain.height(),
@@ -62,13 +58,11 @@ async fn get_status(state: web::Data<Mutex<NodeState>>) -> HttpResponse {
     })
 }
 
-// GET /chain
 async fn get_chain(state: web::Data<Mutex<NodeState>>) -> HttpResponse {
     let node = state.lock().unwrap();
     HttpResponse::Ok().json(&node.chain.chain)
 }
 
-// GET /mine
 async fn mine(state: web::Data<Mutex<NodeState>>) -> HttpResponse {
     let mut node = state.lock().unwrap();
 
@@ -79,25 +73,27 @@ async fn mine(state: web::Data<Mutex<NodeState>>) -> HttpResponse {
     }
 
     let miner_address = node.miner_wallet.address.clone();
-    let miner_wallet  = Wallet::new(); // Fresh wallet ref for signing
+    let miner_wallet  = Wallet::new();
 
     node.chain.mine_pending_transactions(&miner_address, &miner_wallet);
 
-    let latest = node.chain.latest_block();
-    HttpResponse::Ok().json(serde_json::json!({
-        "message": format!("Block {} mined", latest.index),
-        "hash":    latest.hash.clone(),
-        "height":  node.chain.height(),
-        "reward":  node.chain.get_current_reward(),
-    }))
+    let peers = node.peers.clone();
+    drop(node);
+
+    for peer in &peers {
+        let _ = std::thread::spawn({
+            let peer = peer.clone();
+            move || { let _ = reqwest::blocking::get(format!("{}/peers/sync", peer)); }
+        }).join();
+    }
+
+    HttpResponse::Ok().json(serde_json::json!({"message": "Block mined successfully"}))
 }
 
-// POST /transactions/new
 async fn new_transaction(
     state: web::Data<Mutex<NodeState>>,
     body:  web::Json<TransactionRequest>,
 ) -> HttpResponse {
-    // Reconstruct signed transaction for verification
     let tx_data = TransactionData {
         sender:    body.sender.clone(),
         recipient: body.recipient.clone(),
@@ -113,29 +109,68 @@ async fn new_transaction(
         public_key: body.public_key.clone(),
     };
 
-    // Verify FALCON-512 signature
-    if !verify_transaction(&signed_tx) {
+    // Try Rust native verification first
+    let mut valid = verify_transaction(&signed_tx);
+
+    // If that fails try Python liboqs detached signature format
+    if !valid {
+        if let (Ok(sig_bytes), Ok(pk_bytes)) = (
+            hex::decode(&body.signature),
+            hex::decode(&body.public_key)
+        ) {
+            // Try Python JSON format
+            valid = verify_detached(
+                &tx_data.to_bytes_python(),
+                &sig_bytes,
+                &pk_bytes,
+            );
+
+            // Try Rust colon format
+            if !valid {
+                valid = verify_detached(
+                    &tx_data.to_bytes_rust(),
+                    &sig_bytes,
+                    &pk_bytes,
+                );
+            }
+        }
+    }
+
+    if !valid {
         return HttpResponse::BadRequest().json(
             serde_json::json!({"error": "Invalid signature — transaction rejected"})
         );
     }
 
     let mut node = state.lock().unwrap();
-    node.chain.add_transaction(signed_tx);
+    node.chain.add_transaction(signed_tx.clone());
+
+    let peers = node.peers.clone();
+    drop(node);
+
+    for peer in &peers {
+        let client  = reqwest::blocking::Client::new();
+        let payload = body.0.clone();
+        let peer    = peer.clone();
+        std::thread::spawn(move || {
+            let _ = client
+                .post(format!("{}/transactions/new", peer))
+                .json(&payload)
+                .send();
+        });
+    }
 
     HttpResponse::Ok().json(
         serde_json::json!({"message": "Transaction added to mempool"})
     )
 }
 
-// GET /balance/{address}
 async fn get_balance(
     state:   web::Data<Mutex<NodeState>>,
     address: web::Path<String>,
 ) -> HttpResponse {
     let node    = state.lock().unwrap();
     let balance = node.chain.get_balance(&address);
-
     HttpResponse::Ok().json(BalanceResponse {
         address: address.to_string(),
         balance,
@@ -143,32 +178,34 @@ async fn get_balance(
     })
 }
 
-// POST /peers/register
 async fn register_peer(
     state: web::Data<Mutex<NodeState>>,
     body:  web::Json<PeerRequest>,
 ) -> HttpResponse {
     let mut node = state.lock().unwrap();
-
     if !node.peers.contains(&body.peer) {
         node.peers.push(body.peer.clone());
     }
-
     HttpResponse::Ok().json(serde_json::json!({
         "message": format!("Peer {} registered", body.peer),
         "peers":   node.peers.clone(),
     }))
 }
 
-// GET /peers/sync  
-async fn sync_peers(state: web::Data<Mutex<NodeState>>) -> HttpResponse {
-    // In production this would fetch chains from all peers
-    // and replace with longest valid chain
-    let node = state.lock().unwrap();
-    HttpResponse::Ok().json(serde_json::json!({
-        "message": "Sync complete",
-        "blocks":  node.chain.height(),
-    }))
+async fn sync_chain(state: web::Data<Mutex<NodeState>>) -> HttpResponse {
+    let mut node = state.lock().unwrap();
+    let peers    = node.peers.clone();
+    let replaced = sync_with_peers(&mut node.chain, &peers);
+
+    if replaced {
+        HttpResponse::Ok().json(
+            serde_json::json!({"message": "Chain replaced with longer peer chain"})
+        )
+    } else {
+        HttpResponse::Ok().json(
+            serde_json::json!({"message": "Our chain is already the longest"})
+        )
+    }
 }
 
 pub async fn start_node(port: u16) -> std::io::Result<()> {
@@ -199,7 +236,7 @@ pub async fn start_node(port: u16) -> std::io::Result<()> {
             .route("/balance/{address}", web::get().to(get_balance))
             .route("/transactions/new",  web::post().to(new_transaction))
             .route("/peers/register",    web::post().to(register_peer))
-            .route("/peers/sync",        web::get().to(sync_peers))
+            .route("/peers/sync",        web::get().to(sync_chain))
     })
     .bind(format!("0.0.0.0:{}", port))?
     .run()

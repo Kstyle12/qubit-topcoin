@@ -3,6 +3,7 @@ mod transaction;
 mod block;
 mod storage;
 mod blockchain;
+mod sync;
 mod node;
 
 use std::env;

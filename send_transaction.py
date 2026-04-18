@@ -22,15 +22,22 @@ def generate_wallet():
         "private_key": private_key.hex()
     }
 
-def send_transaction(sender, recipient_address, amount, node_url, fee=0.001):
+def send_transaction(sender, recipient_address, amount_qtp, node_url, fee_qtp=0.001):
+    # Convert to cori integers
+    amount_cori = int(amount_qtp * 100_000_000)
+    fee_cori    = int(fee_qtp * 100_000_000)
+    timestamp   = int(time.time())
+
+    # Build transaction — must match Python JSON format
     transaction = {
-        "sender":    sender["address"],
+        "amount":    amount_cori,
+        "fee":       fee_cori,
         "recipient": recipient_address,
-        "amount":    amount,
-        "fee":       fee,
-        "timestamp": time.time()
+        "sender":    sender["address"],
+        "timestamp": timestamp
     }
 
+    # Sign the sorted JSON bytes — same as Rust expects for Python format
     transaction_bytes = json.dumps(transaction, sort_keys=True).encode()
     private_key_bytes = bytes.fromhex(sender["private_key"])
     signer            = oqs.Signature("Falcon-512", secret_key=private_key_bytes)
@@ -50,7 +57,10 @@ def send_transaction(sender, recipient_address, amount, node_url, fee=0.001):
         f"{node_url}/transactions/new",
         json=payload
     )
-    return response.json()
+
+    print(f"  Status code: {response.status_code}")
+    print(f"  Response: {response.text}")
+    return response.text
 
 # --- TEST ---
 if __name__ == "__main__":
@@ -64,14 +74,11 @@ if __name__ == "__main__":
     print(f"Recipient address: {recipient['address']}")
     print("")
 
-    print("Signing and submitting transaction to node 5001...")
+    print("Signing and submitting transaction to Rust node 5003...")
     result = send_transaction(
         sender=            sender,
         recipient_address= recipient["address"],
-        amount=            10.0,
-        node_url=          "http://localhost:5001",
-        fee=               0.001
+        amount_qtp=        10.0,
+        node_url=          "http://localhost:5003",
+        fee_qtp=           0.001
     )
-    print(f"Node response: {result}")
-    print("")
-    print("Now run: curl http://localhost:5001/mine")
