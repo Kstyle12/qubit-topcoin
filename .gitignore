@@ -3,3 +3,4 @@ __pycache__/
 *.pyc
 qtpcore/qtp_chain.json
 *.qtp
+qtpcore/node_identity.json
