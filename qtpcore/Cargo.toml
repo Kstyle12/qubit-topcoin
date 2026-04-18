@@ -39,3 +39,6 @@ rpassword = "7"
 
 [build-dependencies]
 cc = "1.0"
+
+[dependencies.actix-cors]
+version = "0.7"

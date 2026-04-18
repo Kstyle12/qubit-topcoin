@@ -1,4 +1,5 @@
 use actix_web::{web, App, HttpServer, HttpResponse};
+use actix_cors::Cors;
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
 use crate::blockchain::Blockchain;
@@ -229,6 +230,7 @@ pub async fn start_node(port: u16) -> std::io::Result<()> {
 
     HttpServer::new(move || {
         App::new()
+            .wrap(Cors::permissive())
             .app_data(state.clone())
             .route("/status",            web::get().to(get_status))
             .route("/chain",             web::get().to(get_chain))
