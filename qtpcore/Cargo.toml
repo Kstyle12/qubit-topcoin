@@ -30,3 +30,10 @@ rand = "0.8"
 actix-web = "4"
 reqwest = { version = "0.11", features = ["json", "blocking"] }
 tokio = { version = "1", features = ["full"] }
+
+# Wallet encryption
+aes-gcm = "0.10"
+pbkdf2 = { version = "0.12", features = ["hmac"] }
+sha2 = "0.10"
+rand_core = { version = "0.6", features = ["getrandom"] }
+rpassword = "7"
