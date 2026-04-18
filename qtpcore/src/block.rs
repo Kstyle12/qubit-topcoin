@@ -11,7 +11,8 @@ pub struct Block {
     pub transactions:  Vec<SignedTransaction>,
     pub previous_hash: String,
     pub nonce:         u64,
-    pub hash:          String,
+    pub hash:          String,  // RandomX hash — proof of work
+    pub header_hash:   String,  // SHA-3 hash — block identifier
 }
 
 impl Block {
@@ -30,16 +31,19 @@ impl Block {
             timestamp,
             transactions,
             previous_hash,
-            nonce: 0,
-            hash: String::new(),
+            nonce:       0,
+            hash:        String::new(),
+            header_hash: String::new(),
         };
 
-        block.hash = block.calculate_hash();
+        block.header_hash = block.calculate_header_hash();
+        block.hash        = block.header_hash.clone();
         block
     }
 
-    pub fn calculate_hash(&self) -> String {
-        // Use SHA3 for block identification
+    pub fn calculate_header_hash(&self) -> String {
+        // SHA-3 hash of block contents — used as block identifier
+        // and as input to RandomX
         let contents = format!(
             "{}:{}:{}:{}:{}",
             self.index,
@@ -72,26 +76,24 @@ impl Block {
     pub fn mine(&mut self, difficulty: usize) {
         println!("  Mining block {} with RandomX...", self.index);
 
-        // RandomX key is the previous block hash
-        // This changes every block making ASICs ineffective
-        let rx_key  = self.previous_hash.as_bytes();
-        let hasher  = RandomXHasher::new(rx_key);
+        // RandomX key changes every block based on previous hash
+        // This makes it impossible for ASICs to pre-compute solutions
+        let rx_key   = self.previous_hash.as_bytes().to_vec();
+        let hasher   = RandomXHasher::new(&rx_key);
         let mut attempts: u64 = 0;
 
         loop {
-            self.nonce += 1;
-            self.hash   = self.calculate_hash();
+            self.nonce       += 1;
+            self.header_hash  = self.calculate_header_hash();
 
-            // Use RandomX to hash the block header
-            let rx_input  = self.hash.as_bytes();
-            let rx_hash   = hasher.hash(rx_input);
-            let rx_hex    = hex::encode(rx_hash);
+            // Feed SHA-3 header hash into RandomX
+            let rx_hash = hasher.hash(self.header_hash.as_bytes());
 
             attempts += 1;
 
             if meets_difficulty(&rx_hash, difficulty) {
-                // Store the RandomX hash as the final block hash
-                self.hash = rx_hex;
+                // Store RandomX hash as the proof of work
+                self.hash = hex::encode(rx_hash);
                 println!(
                     "  Block {} mined with RandomX in {} attempts",
                     self.index, attempts
@@ -103,7 +105,12 @@ impl Block {
     }
 
     pub fn is_valid(&self) -> bool {
-        // Verify all transaction signatures
+        // Check 1: Header hash is correct
+        if self.header_hash != self.calculate_header_hash() {
+            return false;
+        }
+
+        // Check 2: All transaction signatures are valid
         for tx in &self.transactions {
             if tx.data.sender != "NETWORK" && tx.data.sender != "GENESIS" {
                 if !verify_transaction(tx) {
@@ -111,6 +118,7 @@ impl Block {
                 }
             }
         }
+
         true
     }
 
@@ -124,9 +132,11 @@ impl Block {
             previous_hash: "0".repeat(64),
             nonce:         0,
             hash:          String::new(),
+            header_hash:   String::new(),
         };
 
-        genesis.hash = genesis.calculate_hash();
+        genesis.header_hash = genesis.calculate_header_hash();
+        genesis.hash        = genesis.header_hash.clone();
         genesis.mine(difficulty);
         genesis
     }
