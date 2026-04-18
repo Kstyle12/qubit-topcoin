@@ -6,6 +6,7 @@ mod storage;
 mod blockchain;
 mod sync;
 mod identity;
+mod discovery;
 mod node;
 
 use std::env;

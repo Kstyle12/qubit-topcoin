@@ -7,6 +7,7 @@ use crate::wallet::Wallet;
 use crate::transaction::{TransactionData, SignedTransaction, verify_transaction, verify_detached};
 use crate::sync::sync_with_peers;
 use crate::identity::NodeIdentity;
+use crate::discovery;
 
 pub struct NodeState {
     pub chain:        Blockchain,
@@ -254,9 +255,20 @@ pub async fn start_node(port: u16) -> std::io::Result<()> {
     println!("  GET  /peers/sync");
     println!("=========================================");
 
+    // Discover peers automatically on startup
+    println!("Discovering peers...");
+    let discovered = crate::discovery::discover_peers();
+    let reachable  = crate::discovery::filter_reachable(discovered);
+
+    if reachable.is_empty() {
+        println!("  No reachable peers found - starting as bootstrap node");
+    } else {
+        println!("  Connected to {} peer(s)", reachable.len());
+    }
+
     let state = web::Data::new(Mutex::new(NodeState {
         chain:        Blockchain::new(),
-        peers:        vec![],
+        peers:        reachable,
         miner_wallet: Wallet::new(),
         identity,
     }));
