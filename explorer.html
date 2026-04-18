@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qubit TopCoin (QTP) Block Explorer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0a0e1a;
+            color: #e2e8f0;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1a3a6b, #0a0e1a);
+            border-bottom: 2px solid #2563eb;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #60a5fa;
+            letter-spacing: 2px;
+        }
+
+        .logo span {
+            color: #2563eb;
+        }
+
+        .tagline {
+            font-size: 11px;
+            color: #64748b;
+            letter-spacing: 1px;
+        }
+
+        .node-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.offline {
+            background: #ef4444;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #111827;
+            border: 1px solid #1e3a5f;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #60a5fa;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #64748b;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .section-title {
+            font-size: 14px;
+            color: #60a5fa;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #1e3a5f;
+        }
+
+        .block-card {
+            background: #111827;
+            border: 1px solid #1e3a5f;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .block-card:hover {
+            border-color: #2563eb;
+        }
+
+        .block-card.expanded {
+            border-color: #2563eb;
+        }
+
+        .block-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .block-number {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2563eb;
+        }
+
+        .block-time {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .block-hash {
+            font-size: 11px;
+            color: #94a3b8;
+            word-break: break-all;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: #0a0e1a;
+            border-radius: 4px;
+        }
+
+        .block-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .block-meta span {
+            color: #94a3b8;
+        }
+
+        .tx-list {
+            margin-top: 16px;
+            display: none;
+        }
+
+        .block-card.expanded .tx-list {
+            display: block;
+        }
+
+        .tx-card {
+            background: #0a0e1a;
+            border: 1px solid #1e3a5f;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 8px;
+            font-size: 11px;
+        }
+
+        .tx-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .tx-label {
+            color: #64748b;
+            min-width: 80px;
+        }
+
+        .tx-value {
+            color: #94a3b8;
+            word-break: break-all;
+            text-align: right;
+            flex: 1;
+            padding-left: 10px;
+        }
+
+        .tx-amount {
+            color: #22c55e;
+            font-weight: bold;
+        }
+
+        .tx-fee {
+            color: #f59e0b;
+        }
+
+        .network-badge {
+            background: #1e3a5f;
+            color: #60a5fa;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            letter-spacing: 1px;
+        }
+
+        .search-box {
+            width: 100%;
+            background: #111827;
+            border: 1px solid #1e3a5f;
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: #e2e8f0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            margin-bottom: 24px;
+            outline: none;
+        }
+
+        .search-box:focus {
+            border-color: #2563eb;
+        }
+
+        .search-box::placeholder {
+            color: #475569;
+        }
+
+        .balance-result {
+            background: #111827;
+            border: 1px solid #22c55e;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+            display: none;
+        }
+
+        .balance-amount {
+            font-size: 32px;
+            font-weight: bold;
+            color: #22c55e;
+            margin-bottom: 4px;
+        }
+
+        .balance-address {
+            font-size: 11px;
+            color: #64748b;
+            word-break: break-all;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #475569;
+            padding: 40px;
+            font-size: 13px;
+        }
+
+        .refresh-btn {
+            background: #1e3a5f;
+            color: #60a5fa;
+            border: 1px solid #2563eb;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+            float: right;
+        }
+
+        .refresh-btn:hover {
+            background: #2563eb;
+            color: white;
+        }
+
+        .peers-list {
+            background: #111827;
+            border: 1px solid #1e3a5f;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 30px;
+        }
+
+        .peer-item {
+            font-size: 12px;
+            color: #94a3b8;
+            padding: 6px 0;
+            border-bottom: 1px solid #1e3a5f;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .peer-item:last-child {
+            border-bottom: none;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #475569;
+            font-size: 11px;
+            border-top: 1px solid #1e3a5f;
+            margin-top: 40px;
+        }
+
+        .loading {
+            color: #475569;
+            font-size: 12px;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div>
+        <div class="logo">QUBIT <span>TOP</span>COIN</div>
+        <div class="tagline">Quantum-Resistant · For Everyone · Forever</div>
+    </div>
+    <div style="text-align: center;">
+        <div class="network-badge">CORI TESTNET</div>
+    </div>
+    <div class="node-status">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">Connecting...</span>
+    </div>
+</header>
+
+<div class="container">
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value" id="blockHeight">—</div>
+            <div class="stat-label">Block Height</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="pendingTxs">—</div>
+            <div class="stat-label">Pending Txs</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="difficulty">—</div>
+            <div class="stat-label">Difficulty</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="peerCount">—</div>
+            <div class="stat-label">Peers</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="blockReward">50</div>
+            <div class="stat-label">Block Reward (QTP)</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">21M</div>
+            <div class="stat-label">Max Supply</div>
+        </div>
+    </div>
+
+    <!-- Address Search -->
+    <div class="section-title">
+        Search Address
+        <button class="refresh-btn" onclick="loadChain()">↻ Refresh</button>
+    </div>
+    <input
+        type="text"
+        class="search-box"
+        id="searchInput"
+        placeholder="Enter a QTP address to check balance..."
+        onkeypress="handleSearch(event)"
+    />
+    <div class="balance-result" id="balanceResult">
+        <div class="balance-amount" id="balanceAmount"></div>
+        <div class="balance-address" id="balanceAddress"></div>
+    </div>
+
+    <!-- Peers -->
+    <div class="section-title">Connected Peers</div>
+    <div class="peers-list" id="peersList">
+        <div class="loading">Loading peers...</div>
+    </div>
+
+    <!-- Blocks -->
+    <div class="section-title">Latest Blocks</div>
+    <div id="blockList">
+        <div class="loading">Loading blocks...</div>
+    </div>
+
+</div>
+
+<footer>
+    Qubit TopCoin (QTP) · Cori Testnet · MIT License · 
+    github.com/Kstyle12/qubit-topcoin · 
+    For everyone. Forever.
+</footer>
+
+<script>
+    const NODE = 'http://localhost:5003';
+
+    function formatTime(timestamp) {
+        return new Date(timestamp * 1000).toLocaleString();
+    }
+
+    function formatQTP(cori) {
+        return (cori / 100_000_000).toFixed(8) + ' QTP';
+    }
+
+    function shortHash(hash) {
+        return hash.substring(0, 20) + '...' + hash.substring(hash.length - 8);
+    }
+
+    async function loadStatus() {
+        try {
+            const res  = await fetch(`${NODE}/status`);
+            const data = await res.json();
+
+            document.getElementById('blockHeight').textContent  = data.blocks;
+            document.getElementById('pendingTxs').textContent   = data.pending_txs;
+            document.getElementById('difficulty').textContent   = data.difficulty;
+            document.getElementById('peerCount').textContent    = data.peers.length;
+            document.getElementById('statusDot').className      = 'status-dot';
+            document.getElementById('statusText').textContent   = 'Node Online';
+
+            // Peers
+            const peersList = document.getElementById('peersList');
+            if (data.peers.length === 0) {
+                peersList.innerHTML = '<div class="peer-item">No peers connected</div>';
+            } else {
+                peersList.innerHTML = data.peers.map(p =>
+                    `<div class="peer-item">
+                        <div class="status-dot"></div>
+                        ${p}
+                    </div>`
+                ).join('');
+            }
+
+        } catch (e) {
+            document.getElementById('statusDot').className    = 'status-dot offline';
+            document.getElementById('statusText').textContent = 'Node Offline';
+        }
+    }
+
+    async function loadChain() {
+        try {
+            const res    = await fetch(`${NODE}/chain`);
+            const blocks = await res.json();
+            const list   = document.getElementById('blockList');
+
+            if (!blocks || blocks.length === 0) {
+                list.innerHTML = '<div class="empty-state">No blocks found</div>';
+                return;
+            }
+
+            // Show newest blocks first
+            const reversed = [...blocks].reverse();
+
+            list.innerHTML = reversed.map(block => `
+                <div class="block-card" onclick="toggleBlock(this)">
+                    <div class="block-header">
+                        <div class="block-number">Block #${block.index}</div>
+                        <div class="block-time">${formatTime(block.timestamp)}</div>
+                    </div>
+                    <div class="block-hash">
+                        <span style="color:#475569">Hash: </span>${block.hash}
+                    </div>
+                    <div class="block-hash">
+                        <span style="color:#475569">Prev: </span>${block.previous_hash}
+                    </div>
+                    <div class="block-meta">
+                        <div>Txs: <span>${block.transactions ? block.transactions.length : 0}</span></div>
+                        <div>Nonce: <span>${block.nonce}</span></div>
+                    </div>
+                    <div class="tx-list">
+                        ${renderTransactions(block.transactions)}
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (e) {
+            document.getElementById('blockList').innerHTML =
+                '<div class="empty-state">Could not load blocks. Is your node running?</div>';
+        }
+    }
+
+    function renderTransactions(txs) {
+        if (!txs || txs.length === 0) {
+            return '<div class="empty-state">No transactions</div>';
+        }
+
+        return txs.map(tx => {
+            const d = tx.data || tx;
+            const isReward = d.sender === 'NETWORK' || d.sender === 'GENESIS';
+            return `
+                <div class="tx-card">
+                    <div class="tx-row">
+                        <span class="tx-label">From</span>
+                        <span class="tx-value">${isReward ? '⛏ MINING REWARD' : d.sender}</span>
+                    </div>
+                    <div class="tx-row">
+                        <span class="tx-label">To</span>
+                        <span class="tx-value">${d.recipient}</span>
+                    </div>
+                    <div class="tx-row">
+                        <span class="tx-label">Amount</span>
+                        <span class="tx-value tx-amount">${formatQTP(d.amount)}</span>
+                    </div>
+                    ${!isReward ? `
+                    <div class="tx-row">
+                        <span class="tx-label">Fee</span>
+                        <span class="tx-value tx-fee">${formatQTP(d.fee)}</span>
+                    </div>` : ''}
+                    <div class="tx-row">
+                        <span class="tx-label">Hash</span>
+                        <span class="tx-value">${tx.hash ? shortHash(tx.hash) : 'N/A'}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function toggleBlock(el) {
+        el.classList.toggle('expanded');
+    }
+
+    async function handleSearch(event) {
+        if (event.key !== 'Enter') return;
+        const address = document.getElementById('searchInput').value.trim();
+        if (!address) return;
+
+        try {
+            const res  = await fetch(`${NODE}/balance/${address}`);
+            const data = await res.json();
+
+            document.getElementById('balanceAmount').textContent  = formatQTP(data.balance);
+            document.getElementById('balanceAddress').textContent = address;
+            document.getElementById('balanceResult').style.display = 'block';
+        } catch (e) {
+            alert('Could not fetch balance. Make sure your node is running.');
+        }
+    }
+
+    // Load everything on startup
+    async function init() {
+        await loadStatus();
+        await loadChain();
+    }
+
+    // Auto refresh every 10 seconds
+    init();
+    setInterval(init, 10000);
+</script>
+
+</body>
+</html>
