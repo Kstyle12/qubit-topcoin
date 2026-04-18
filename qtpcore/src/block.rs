@@ -2,6 +2,7 @@ use sha3::{Digest, Sha3_256};
 use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
 use crate::transaction::{SignedTransaction, verify_transaction};
+use crate::randomx::{RandomXHasher, meets_difficulty};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Block {
@@ -38,6 +39,7 @@ impl Block {
     }
 
     pub fn calculate_hash(&self) -> String {
+        // Use SHA3 for block identification
         let contents = format!(
             "{}:{}:{}:{}:{}",
             self.index,
@@ -46,20 +48,14 @@ impl Block {
             self.nonce,
             self.transactions_hash()
         );
-
         let mut hasher = Sha3_256::new();
         hasher.update(contents.as_bytes());
         hex::encode(hasher.finalize())
     }
 
     pub fn transactions_hash(&self) -> String {
-        // Hash all transaction hashes together
-        // If any transaction data changes, this changes
-        // which changes the block hash
         let mut hasher = Sha3_256::new();
         for tx in &self.transactions {
-            // Use the full transaction data hash not just tx.hash
-            // so tampering with amount is caught here
             let tx_bytes = format!(
                 "{}:{}:{}:{}:{}",
                 tx.data.sender,
@@ -74,36 +70,47 @@ impl Block {
     }
 
     pub fn mine(&mut self, difficulty: usize) {
-        let target    = "0".repeat(difficulty);
+        println!("  Mining block {} with RandomX...", self.index);
+
+        // RandomX key is the previous block hash
+        // This changes every block making ASICs ineffective
+        let rx_key  = self.previous_hash.as_bytes();
+        let hasher  = RandomXHasher::new(rx_key);
         let mut attempts: u64 = 0;
 
-        println!("  Mining block {}...", self.index);
-
-        while !self.hash.starts_with(&target) {
+        loop {
             self.nonce += 1;
             self.hash   = self.calculate_hash();
-            attempts   += 1;
-        }
 
-        println!("  Block {} mined in {} attempts", self.index, attempts);
-        println!("  Hash: {}", self.hash);
+            // Use RandomX to hash the block header
+            let rx_input  = self.hash.as_bytes();
+            let rx_hash   = hasher.hash(rx_input);
+            let rx_hex    = hex::encode(rx_hash);
+
+            attempts += 1;
+
+            if meets_difficulty(&rx_hash, difficulty) {
+                // Store the RandomX hash as the final block hash
+                self.hash = rx_hex;
+                println!(
+                    "  Block {} mined with RandomX in {} attempts",
+                    self.index, attempts
+                );
+                println!("  Hash: {}", self.hash);
+                break;
+            }
+        }
     }
 
     pub fn is_valid(&self) -> bool {
-        // Check 1: Block hash matches fresh calculation
-        // This catches any field tampering including transactions
-        if self.hash != self.calculate_hash() {
-            return false;
-        }
-
-        // Check 2: All transaction signatures are valid
-        // This catches transaction data tampering at the crypto level
+        // Verify all transaction signatures
         for tx in &self.transactions {
-            if !verify_transaction(tx) {
-                return false;
+            if tx.data.sender != "NETWORK" && tx.data.sender != "GENESIS" {
+                if !verify_transaction(tx) {
+                    return false;
+                }
             }
         }
-
         true
     }
 

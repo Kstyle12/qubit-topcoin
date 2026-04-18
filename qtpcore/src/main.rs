@@ -1,5 +1,6 @@
 mod wallet;
 mod transaction;
+mod randomx;
 mod block;
 mod storage;
 mod blockchain;

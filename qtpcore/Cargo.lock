@@ -1331,6 +1331,7 @@ dependencies = [
  "actix-web",
  "aes-gcm",
  "bs58",
+ "cc",
  "chrono",
  "hex",
  "pbkdf2",
