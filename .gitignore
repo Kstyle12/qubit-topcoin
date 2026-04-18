@@ -2,3 +2,4 @@ qtpcore/target/
 __pycache__/
 *.pyc
 qtpcore/qtp_chain.json
+*.qtp
