@@ -1,4 +1,3 @@
-[QTP_Whitepaper.pdf](https://github.com/user-attachments/files/26834896/QTP_Whitepaper.pdf)
 markdown# Qubit TopCoin (QTP)
 
 > **Quantum-hardened digital gold. For everyone. Forever.**
@@ -186,7 +185,7 @@ QTP is built in public from day one. Contributions welcome — especially Rust d
 
 ## Whitepaper
 
-[Read the QTP Whitepaper](./QTP_Whitepaper.pdf)
+[QTP_Whitepaper.pdf](https://github.com/user-attachments/files/26834896/QTP_Whitepaper.pdf)
 
 ---
 
