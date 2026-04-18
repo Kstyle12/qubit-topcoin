@@ -1,3 +1,16 @@
+
+fn register_miner(node_url: &str, address: &str) -> bool {
+    let url    = format!("{}/set_miner/{}", node_url, address);
+    let client = reqwest::blocking::Client::builder()
+        .timeout(std::time::Duration::from_secs(10))
+        .build()
+        .unwrap();
+    match client.post(&url).send() {
+        Ok(r)  => r.status().is_success(),
+        Err(_) => false,
+    }
+}
+
 // =========================================
 //   QTP — Qubit TopCoin CPU Miner
 //   Cori Testnet
@@ -21,16 +34,24 @@ fn print_header() {
 }
 
 fn get_status(node_url: &str) -> Option<serde_json::Value> {
-    let url = format!("{}/status", node_url);
-    match reqwest::blocking::get(&url) {
+    let url    = format!("{}/status", node_url);
+    let client = reqwest::blocking::Client::builder()
+        .timeout(std::time::Duration::from_secs(10))
+        .build()
+        .unwrap();
+    match client.get(&url).send() {
         Ok(r)  => r.json().ok(),
         Err(_) => None,
     }
 }
 
-fn mine_block(node_url: &str) -> Option<serde_json::Value> {
-    let url = format!("{}/mine", node_url);
-    match reqwest::blocking::get(&url) {
+fn mine_block(node_url: &str, _miner_address: &str) -> Option<serde_json::Value> {
+    let url    = format!("{}/mine", node_url);
+    let client = reqwest::blocking::Client::builder()
+        .timeout(std::time::Duration::from_secs(300)) // 5 min timeout for mining
+        .build()
+        .unwrap();
+    match client.get(&url).send() {
         Ok(r)  => r.json().ok(),
         Err(_) => None,
     }
@@ -117,6 +138,14 @@ fn main() {
         }
     }
 
+    // Register miner address with node
+    print!("Registering miner address...");
+    if register_miner(&node_url, &miner_address) {
+        println!(" done");
+    } else {
+        println!(" failed (node may not support this yet)");
+    }
+
     println!("");
 
     // Mining loop
@@ -147,20 +176,17 @@ fn main() {
 
                 // Mine the block
                 let mine_start = Instant::now();
-                match mine_block(&node_url) {
+                match mine_block(&node_url, &miner_address) {
                     Some(result) => {
-                        if result["message"].as_str()
-                            .unwrap_or("")
-                            .contains("mined")
-                        {
+                        if result.get("hash").is_some() {
                             blocks_mined += 1;
 
-                            // 50 QTP = 5,000,000,000 cori per block
-                            let reward: u64 = 5_000_000_000;
-                            total_earned   += reward;
+                            let reward = result["reward"].as_u64()
+                                .unwrap_or(5_000_000_000);
+                            total_earned += reward;
 
-                            let elapsed     = mine_start.elapsed();
-                            let total_time  = start_time.elapsed();
+                            let elapsed    = mine_start.elapsed();
+                            let total_time = start_time.elapsed();
 
                             println!("[{}] ✓ Block mined!", timestamp());
                             println!(
@@ -168,11 +194,16 @@ fn main() {
                                 result["hash"].as_str().unwrap_or("unknown")
                             );
                             println!(
+                                "  Miner:        {}",
+                                &miner_address[..20]
+                            );
+                            println!(
                                 "  Time:         {:.1}s",
                                 elapsed.as_secs_f64()
                             );
                             println!(
-                                "  Reward:       50.00000000 QTP"
+                                "  Reward:       {:.8} QTP",
+                                reward as f64 / 100_000_000.0
                             );
                             println!(
                                 "  Blocks mined: {}",
@@ -194,6 +225,12 @@ fn main() {
                                 balance as f64 / 100_000_000.0
                             );
                             println!("-----------------------------------------");
+                        } else {
+                            println!(
+                                "[{}] {}",
+                                timestamp(),
+                                result["message"].as_str().unwrap_or("No transactions")
+                            );
                         }
                     }
                     None => {

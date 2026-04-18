@@ -10,10 +10,11 @@ use crate::identity::NodeIdentity;
 use crate::discovery;
 
 pub struct NodeState {
-    pub chain:        Blockchain,
-    pub peers:        Vec<String>,
-    pub miner_wallet: Wallet,
-    pub identity:     NodeIdentity,
+    pub chain:         Blockchain,
+    pub peers:         Vec<String>,
+    pub miner_wallet:  Wallet,
+    pub miner_address: String,
+    pub identity:      NodeIdentity,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -82,7 +83,7 @@ async fn mine(state: web::Data<Mutex<NodeState>>) -> HttpResponse {
         );
     }
 
-    let miner_address = node.miner_wallet.address.clone();
+    let miner_address = node.miner_address.clone();
     let miner_wallet  = Wallet::new();
 
     node.chain.mine_pending_transactions(&miner_address, &miner_wallet);
@@ -210,6 +211,64 @@ async fn register_peer(
     }))
 }
 
+
+async fn mine_to_address(
+    state:   web::Data<Mutex<NodeState>>,
+    address: web::Path<String>,
+) -> HttpResponse {
+    let mut node = state.lock().unwrap();
+
+    if node.chain.mempool.is_empty() {
+        return HttpResponse::Ok().json(
+            serde_json::json!({"message": "No pending transactions"})
+        );
+    }
+
+    let miner_address = address.to_string();
+    let miner_wallet  = Wallet::new();
+
+    node.chain.mine_pending_transactions(&miner_address, &miner_wallet);
+
+    let latest    = node.chain.latest_block();
+    let signature = node.identity.sign(latest.hash.as_bytes());
+    let hash      = latest.hash.clone();
+    let height    = node.chain.height();
+    let reward    = node.chain.get_current_reward();
+
+    let peers = node.peers.clone();
+    drop(node);
+
+    for peer in &peers {
+        let _ = std::thread::spawn({
+            let peer = peer.clone();
+            move || { let _ = reqwest::blocking::get(format!("{}/peers/sync", peer)); }
+        }).join();
+    }
+
+    HttpResponse::Ok().json(serde_json::json!({
+        "message":   format!("Block {} mined", height - 1),
+        "hash":      hash,
+        "height":    height,
+        "reward":    reward,
+        "signature": signature,
+        "miner":     miner_address,
+    }))
+}
+
+
+async fn set_miner_address(
+    state:   web::Data<Mutex<NodeState>>,
+    address: web::Path<String>,
+) -> HttpResponse {
+    let mut node = state.lock().unwrap();
+    node.miner_address = address.to_string();
+    println!("  Miner address set to: {}", address);
+    HttpResponse::Ok().json(serde_json::json!({
+        "message": format!("Miner address set to {}", address),
+        "address": address.to_string(),
+    }))
+}
+
 async fn sync_chain(state: web::Data<Mutex<NodeState>>) -> HttpResponse {
     let mut node = state.lock().unwrap();
     let peers    = node.peers.clone();
@@ -235,7 +294,7 @@ async fn get_identity(state: web::Data<Mutex<NodeState>>) -> HttpResponse {
     }))
 }
 
-pub async fn start_node(port: u16) -> std::io::Result<()> {
+pub async fn start_node(port: u16, miner_addr: Option<String>) -> std::io::Result<()> {
     println!("=========================================");
     println!("  QTP NODE STARTING ON PORT {}", port);
     println!("=========================================");
@@ -266,10 +325,15 @@ pub async fn start_node(port: u16) -> std::io::Result<()> {
         println!("  Connected to {} peer(s)", reachable.len());
     }
 
+    let miner_wallet   = Wallet::new();
+    let default_miner  = miner_addr.unwrap_or_else(|| miner_wallet.address.clone());
+    println!("  Mining rewards -> {}", &default_miner[..20]);
+
     let state = web::Data::new(Mutex::new(NodeState {
-        chain:        Blockchain::new(),
-        peers:        reachable,
-        miner_wallet: Wallet::new(),
+        chain:         Blockchain::new(),
+        peers:         reachable,
+        miner_address: default_miner,
+        miner_wallet,
         identity,
     }));
 
@@ -280,6 +344,7 @@ pub async fn start_node(port: u16) -> std::io::Result<()> {
             .route("/status",            web::get().to(get_status))
             .route("/chain",             web::get().to(get_chain))
             .route("/mine",              web::get().to(mine))
+            .route("/set_miner/{address}", web::post().to(set_miner_address))
             .route("/identity",          web::get().to(get_identity))
             .route("/balance/{address}", web::get().to(get_balance))
             .route("/transactions/new",  web::post().to(new_transaction))
