@@ -13,6 +13,10 @@ path = "src/main.rs"
 name = "send_tx"
 path = "src/bin/send_tx.rs"
 
+[[bin]]
+name = "qtpwallet"
+path = "src/bin/wallet_cli.rs"
+
 [dependencies]
 pqcrypto-falcon = "0.3"
 pqcrypto-traits = "0.3"
