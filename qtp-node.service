@@ -1,0 +1,21 @@
+[Unit]
+Description=Qubit TopCoin (QTP) Node - Cori Testnet
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=%i
+WorkingDirectory=%h/qubit-topcoin/qtpcore
+ExecStart=%h/.cargo/bin/cargo run --release --bin qtpcore -- 5003
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=qtp-node
+
+Environment=RUST_LOG=info
+Environment=HOME=%h
+
+[Install]
+WantedBy=multi-user.target
