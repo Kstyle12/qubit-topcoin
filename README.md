@@ -202,4 +202,3 @@ Experimental software on the Cori Testnet. Do not use for real financial transac
 ---
 
 *Qubit TopCoin. For everyone. Forever.*
-Paste that into the GitHub editor, scroll down, and click Commit changes. Tell me when it's done.
