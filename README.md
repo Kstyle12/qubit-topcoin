@@ -1,4 +1,4 @@
-markdown# Qubit TopCoin (QTP)
+Qubit TopCoin (QTP)
 
 > **Quantum-hardened digital gold. For everyone. Forever.**
 
