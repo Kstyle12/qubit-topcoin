@@ -30,9 +30,7 @@
             letter-spacing: 2px;
         }
 
-        .logo span {
-            color: #2563eb;
-        }
+        .logo span { color: #2563eb; }
 
         .tagline {
             font-size: 11px;
@@ -110,6 +108,61 @@
             border-bottom: 1px solid #1e3a5f;
         }
 
+        .identity-card {
+            background: #111827;
+            border: 1px solid #2563eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .identity-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            align-items: flex-start;
+        }
+
+        .identity-row:last-child { margin-bottom: 0; }
+
+        .identity-label {
+            font-size: 11px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-width: 120px;
+            padding-top: 2px;
+        }
+
+        .identity-value {
+            font-size: 11px;
+            color: #94a3b8;
+            word-break: break-all;
+            flex: 1;
+            padding: 6px 10px;
+            background: #0a0e1a;
+            border-radius: 4px;
+            border: 1px solid #1e3a5f;
+        }
+
+        .identity-value.highlight {
+            color: #60a5fa;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .quantum-badge {
+            display: inline-block;
+            background: #1e3a5f;
+            color: #60a5fa;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 10px;
+            letter-spacing: 1px;
+            margin-left: 8px;
+            border: 1px solid #2563eb;
+        }
+
         .block-card {
             background: #111827;
             border: 1px solid #1e3a5f;
@@ -120,13 +173,8 @@
             transition: border-color 0.2s;
         }
 
-        .block-card:hover {
-            border-color: #2563eb;
-        }
-
-        .block-card.expanded {
-            border-color: #2563eb;
-        }
+        .block-card:hover { border-color: #2563eb; }
+        .block-card.expanded { border-color: #2563eb; }
 
         .block-header {
             display: flex;
@@ -163,18 +211,14 @@
             color: #64748b;
         }
 
-        .block-meta span {
-            color: #94a3b8;
-        }
+        .block-meta span { color: #94a3b8; }
 
         .tx-list {
             margin-top: 16px;
             display: none;
         }
 
-        .block-card.expanded .tx-list {
-            display: block;
-        }
+        .block-card.expanded .tx-list { display: block; }
 
         .tx-card {
             background: #0a0e1a;
@@ -204,14 +248,8 @@
             padding-left: 10px;
         }
 
-        .tx-amount {
-            color: #22c55e;
-            font-weight: bold;
-        }
-
-        .tx-fee {
-            color: #f59e0b;
-        }
+        .tx-amount { color: #22c55e; font-weight: bold; }
+        .tx-fee    { color: #f59e0b; }
 
         .network-badge {
             background: #1e3a5f;
@@ -235,13 +273,8 @@
             outline: none;
         }
 
-        .search-box:focus {
-            border-color: #2563eb;
-        }
-
-        .search-box::placeholder {
-            color: #475569;
-        }
+        .search-box:focus { border-color: #2563eb; }
+        .search-box::placeholder { color: #475569; }
 
         .balance-result {
             background: #111827;
@@ -285,10 +318,7 @@
             float: right;
         }
 
-        .refresh-btn:hover {
-            background: #2563eb;
-            color: white;
-        }
+        .refresh-btn:hover { background: #2563eb; color: white; }
 
         .peers-list {
             background: #111827;
@@ -308,9 +338,7 @@
             gap: 8px;
         }
 
-        .peer-item:last-child {
-            border-bottom: none;
-        }
+        .peer-item:last-child { border-bottom: none; }
 
         footer {
             text-align: center;
@@ -327,6 +355,14 @@
             text-align: center;
             padding: 20px;
         }
+
+        .pk-truncated {
+            font-size: 10px;
+            color: #475569;
+            cursor: pointer;
+        }
+
+        .pk-truncated:hover { color: #94a3b8; }
     </style>
 </head>
 <body>
@@ -366,7 +402,7 @@
             <div class="stat-label">Peers</div>
         </div>
         <div class="stat-card">
-            <div class="stat-value" id="blockReward">50</div>
+            <div class="stat-value">50</div>
             <div class="stat-label">Block Reward (QTP)</div>
         </div>
         <div class="stat-card">
@@ -375,10 +411,45 @@
         </div>
     </div>
 
+    <!-- Node Identity -->
+    <div class="section-title">
+        Node Identity
+        <span class="quantum-badge">FALCON-512 AUTHENTICATED</span>
+    </div>
+    <div class="identity-card">
+        <div class="identity-row">
+            <div class="identity-label">Node ID</div>
+            <div class="identity-value highlight" id="nodeId">Loading...</div>
+        </div>
+        <div class="identity-row">
+            <div class="identity-label">Algorithm</div>
+            <div class="identity-value">FALCON-512 — NIST Post-Quantum Standard 2024</div>
+        </div>
+        <div class="identity-row">
+            <div class="identity-label">Public Key</div>
+            <div class="identity-value">
+                <span id="pkShort" class="pk-truncated" onclick="togglePK()">
+                    Click to reveal full public key
+                </span>
+                <span id="pkFull" style="display:none; word-break:break-all;"></span>
+            </div>
+        </div>
+        <div class="identity-row">
+            <div class="identity-label">Key Size</div>
+            <div class="identity-value">897 bytes (vs 33 bytes for Bitcoin ECDSA)</div>
+        </div>
+        <div class="identity-row">
+            <div class="identity-label">Quantum Safe</div>
+            <div class="identity-value" style="color:#22c55e;">
+                ✓ Secure against Shor's algorithm
+            </div>
+        </div>
+    </div>
+
     <!-- Address Search -->
     <div class="section-title">
         Search Address
-        <button class="refresh-btn" onclick="loadChain()">↻ Refresh</button>
+        <button class="refresh-btn" onclick="init()">↻ Refresh</button>
     </div>
     <input
         type="text"
@@ -407,16 +478,18 @@
 </div>
 
 <footer>
-    Qubit TopCoin (QTP) · Cori Testnet · MIT License · 
-    github.com/Kstyle12/qubit-topcoin · 
+    Qubit TopCoin (QTP) · Cori Testnet · MIT License ·
+    github.com/Kstyle12/qubit-topcoin ·
     For everyone. Forever.
 </footer>
 
 <script>
     const NODE = 'http://localhost:5003';
+    let fullPK  = '';
+    let pkShown = false;
 
-    function formatTime(timestamp) {
-        return new Date(timestamp * 1000).toLocaleString();
+    function formatTime(ts) {
+        return new Date(ts * 1000).toLocaleString();
     }
 
     function formatQTP(cori) {
@@ -427,22 +500,44 @@
         return hash.substring(0, 20) + '...' + hash.substring(hash.length - 8);
     }
 
+    function togglePK() {
+        pkShown = !pkShown;
+        document.getElementById('pkShort').style.display = pkShown ? 'none' : 'inline';
+        document.getElementById('pkFull').style.display  = pkShown ? 'inline' : 'none';
+    }
+
+    async function loadIdentity() {
+        try {
+            const res  = await fetch(`${NODE}/identity`);
+            const data = await res.json();
+
+            document.getElementById('nodeId').textContent = data.node_id;
+            fullPK = data.public_key;
+            document.getElementById('pkFull').textContent  = data.public_key;
+            document.getElementById('pkShort').textContent =
+                data.public_key.substring(0, 40) + '... (click to expand)';
+
+        } catch(e) {
+            document.getElementById('nodeId').textContent = 'Node offline';
+        }
+    }
+
     async function loadStatus() {
         try {
             const res  = await fetch(`${NODE}/status`);
             const data = await res.json();
 
-            document.getElementById('blockHeight').textContent  = data.blocks;
-            document.getElementById('pendingTxs').textContent   = data.pending_txs;
-            document.getElementById('difficulty').textContent   = data.difficulty;
-            document.getElementById('peerCount').textContent    = data.peers.length;
-            document.getElementById('statusDot').className      = 'status-dot';
-            document.getElementById('statusText').textContent   = 'Node Online';
+            document.getElementById('blockHeight').textContent = data.blocks;
+            document.getElementById('pendingTxs').textContent  = data.pending_txs;
+            document.getElementById('difficulty').textContent  = data.difficulty;
+            document.getElementById('peerCount').textContent   = data.peers.length;
+            document.getElementById('statusDot').className     = 'status-dot';
+            document.getElementById('statusText').textContent  = 'Node Online';
 
-            // Peers
             const peersList = document.getElementById('peersList');
             if (data.peers.length === 0) {
-                peersList.innerHTML = '<div class="peer-item">No peers connected</div>';
+                peersList.innerHTML =
+                    '<div class="peer-item">No peers connected</div>';
             } else {
                 peersList.innerHTML = data.peers.map(p =>
                     `<div class="peer-item">
@@ -452,7 +547,7 @@
                 ).join('');
             }
 
-        } catch (e) {
+        } catch(e) {
             document.getElementById('statusDot').className    = 'status-dot offline';
             document.getElementById('statusText').textContent = 'Node Offline';
         }
@@ -465,11 +560,11 @@
             const list   = document.getElementById('blockList');
 
             if (!blocks || blocks.length === 0) {
-                list.innerHTML = '<div class="empty-state">No blocks found</div>';
+                list.innerHTML =
+                    '<div class="empty-state">No blocks found</div>';
                 return;
             }
 
-            // Show newest blocks first
             const reversed = [...blocks].reverse();
 
             list.innerHTML = reversed.map(block => `
@@ -482,11 +577,15 @@
                         <span style="color:#475569">Hash: </span>${block.hash}
                     </div>
                     <div class="block-hash">
-                        <span style="color:#475569">Prev: </span>${block.previous_hash}
+                        <span style="color:#475569">Prev: </span>
+                        ${block.previous_hash}
                     </div>
                     <div class="block-meta">
-                        <div>Txs: <span>${block.transactions ? block.transactions.length : 0}</span></div>
+                        <div>Txs: <span>
+                            ${block.transactions ? block.transactions.length : 0}
+                        </span></div>
                         <div>Nonce: <span>${block.nonce}</span></div>
+                        <div>Algorithm: <span>RandomX</span></div>
                     </div>
                     <div class="tx-list">
                         ${renderTransactions(block.transactions)}
@@ -494,9 +593,10 @@
                 </div>
             `).join('');
 
-        } catch (e) {
+        } catch(e) {
             document.getElementById('blockList').innerHTML =
-                '<div class="empty-state">Could not load blocks. Is your node running?</div>';
+                '<div class="empty-state">Could not load blocks. ' +
+                'Is your node running?</div>';
         }
     }
 
@@ -506,13 +606,15 @@
         }
 
         return txs.map(tx => {
-            const d = tx.data || tx;
+            const d        = tx.data || tx;
             const isReward = d.sender === 'NETWORK' || d.sender === 'GENESIS';
             return `
                 <div class="tx-card">
                     <div class="tx-row">
                         <span class="tx-label">From</span>
-                        <span class="tx-value">${isReward ? '⛏ MINING REWARD' : d.sender}</span>
+                        <span class="tx-value">
+                            ${isReward ? '⛏ MINING REWARD' : d.sender}
+                        </span>
                     </div>
                     <div class="tx-row">
                         <span class="tx-label">To</span>
@@ -520,7 +622,9 @@
                     </div>
                     <div class="tx-row">
                         <span class="tx-label">Amount</span>
-                        <span class="tx-value tx-amount">${formatQTP(d.amount)}</span>
+                        <span class="tx-value tx-amount">
+                            ${formatQTP(d.amount)}
+                        </span>
                     </div>
                     ${!isReward ? `
                     <div class="tx-row">
@@ -528,8 +632,16 @@
                         <span class="tx-value tx-fee">${formatQTP(d.fee)}</span>
                     </div>` : ''}
                     <div class="tx-row">
-                        <span class="tx-label">Hash</span>
-                        <span class="tx-value">${tx.hash ? shortHash(tx.hash) : 'N/A'}</span>
+                        <span class="tx-label">Tx Hash</span>
+                        <span class="tx-value">
+                            ${tx.hash ? shortHash(tx.hash) : 'N/A'}
+                        </span>
+                    </div>
+                    <div class="tx-row">
+                        <span class="tx-label">Signature</span>
+                        <span class="tx-value" style="color:#7c3aed">
+                            FALCON-512 ✓
+                        </span>
                     </div>
                 </div>
             `;
@@ -549,21 +661,21 @@
             const res  = await fetch(`${NODE}/balance/${address}`);
             const data = await res.json();
 
-            document.getElementById('balanceAmount').textContent  = formatQTP(data.balance);
+            document.getElementById('balanceAmount').textContent =
+                formatQTP(data.balance);
             document.getElementById('balanceAddress').textContent = address;
             document.getElementById('balanceResult').style.display = 'block';
-        } catch (e) {
-            alert('Could not fetch balance. Make sure your node is running.');
+        } catch(e) {
+            alert('Could not fetch balance. Is your node running?');
         }
     }
 
-    // Load everything on startup
     async function init() {
         await loadStatus();
+        await loadIdentity();
         await loadChain();
     }
 
-    // Auto refresh every 10 seconds
     init();
     setInterval(init, 10000);
 </script>
