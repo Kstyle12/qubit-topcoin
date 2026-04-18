@@ -5,6 +5,7 @@ mod block;
 mod storage;
 mod blockchain;
 mod sync;
+mod identity;
 mod node;
 
 use std::env;

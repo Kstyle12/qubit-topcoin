@@ -6,11 +6,13 @@ use crate::blockchain::Blockchain;
 use crate::wallet::Wallet;
 use crate::transaction::{TransactionData, SignedTransaction, verify_transaction, verify_detached};
 use crate::sync::sync_with_peers;
+use crate::identity::NodeIdentity;
 
 pub struct NodeState {
     pub chain:        Blockchain,
     pub peers:        Vec<String>,
     pub miner_wallet: Wallet,
+    pub identity:     NodeIdentity,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -24,14 +26,18 @@ pub struct TransactionRequest {
     pub public_key: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct PeerRequest {
-    pub peer: String,
+    pub peer:       String,
+    pub node_id:    Option<String>,
+    pub public_key: Option<String>,
 }
 
 #[derive(Serialize)]
 pub struct StatusResponse {
     pub status:      String,
+    pub node_id:     String,
+    pub public_key:  String,
     pub blocks:      u64,
     pub pending_txs: usize,
     pub peers:       Vec<String>,
@@ -51,6 +57,8 @@ async fn get_status(state: web::Data<Mutex<NodeState>>) -> HttpResponse {
     let latest = node.chain.latest_block();
     HttpResponse::Ok().json(StatusResponse {
         status:      "running".to_string(),
+        node_id:     node.identity.node_id.clone(),
+        public_key:  node.identity.public_key.clone(),
         blocks:      node.chain.height(),
         pending_txs: node.chain.mempool.len(),
         peers:       node.peers.clone(),
@@ -78,6 +86,10 @@ async fn mine(state: web::Data<Mutex<NodeState>>) -> HttpResponse {
 
     node.chain.mine_pending_transactions(&miner_address, &miner_wallet);
 
+    // Sign the new block hash with node identity
+    let latest    = node.chain.latest_block();
+    let signature = node.identity.sign(latest.hash.as_bytes());
+
     let peers = node.peers.clone();
     drop(node);
 
@@ -88,7 +100,10 @@ async fn mine(state: web::Data<Mutex<NodeState>>) -> HttpResponse {
         }).join();
     }
 
-    HttpResponse::Ok().json(serde_json::json!({"message": "Block mined successfully"}))
+    HttpResponse::Ok().json(serde_json::json!({
+        "message":   "Block mined successfully",
+        "signature": signature,
+    }))
 }
 
 async fn new_transaction(
@@ -110,23 +125,18 @@ async fn new_transaction(
         public_key: body.public_key.clone(),
     };
 
-    // Try Rust native verification first
     let mut valid = verify_transaction(&signed_tx);
 
-    // If that fails try Python liboqs detached signature format
     if !valid {
         if let (Ok(sig_bytes), Ok(pk_bytes)) = (
             hex::decode(&body.signature),
             hex::decode(&body.public_key)
         ) {
-            // Try Python JSON format
             valid = verify_detached(
                 &tx_data.to_bytes_python(),
                 &sig_bytes,
                 &pk_bytes,
             );
-
-            // Try Rust colon format
             if !valid {
                 valid = verify_detached(
                     &tx_data.to_bytes_rust(),
@@ -186,10 +196,16 @@ async fn register_peer(
     let mut node = state.lock().unwrap();
     if !node.peers.contains(&body.peer) {
         node.peers.push(body.peer.clone());
+        println!(
+            "  Peer registered: {} (ID: {})",
+            body.peer,
+            body.node_id.as_deref().unwrap_or("unknown")
+        );
     }
     HttpResponse::Ok().json(serde_json::json!({
-        "message": format!("Peer {} registered", body.peer),
-        "peers":   node.peers.clone(),
+        "message":    format!("Peer {} registered", body.peer),
+        "peers":      node.peers.clone(),
+        "our_node_id": node.identity.node_id.clone(),
     }))
 }
 
@@ -209,13 +225,29 @@ async fn sync_chain(state: web::Data<Mutex<NodeState>>) -> HttpResponse {
     }
 }
 
+// GET /identity — expose this node's public identity
+async fn get_identity(state: web::Data<Mutex<NodeState>>) -> HttpResponse {
+    let node = state.lock().unwrap();
+    HttpResponse::Ok().json(serde_json::json!({
+        "node_id":    node.identity.node_id.clone(),
+        "public_key": node.identity.public_key.clone(),
+    }))
+}
+
 pub async fn start_node(port: u16) -> std::io::Result<()> {
     println!("=========================================");
     println!("  QTP NODE STARTING ON PORT {}", port);
     println!("=========================================");
+    println!("Loading node identity...");
+
+    let identity = NodeIdentity::load_or_create();
+
+    println!("=========================================");
+    println!("  Endpoints:");
     println!("  GET  /status");
     println!("  GET  /chain");
     println!("  GET  /mine");
+    println!("  GET  /identity");
     println!("  GET  /balance/{{address}}");
     println!("  POST /transactions/new");
     println!("  POST /peers/register");
@@ -226,6 +258,7 @@ pub async fn start_node(port: u16) -> std::io::Result<()> {
         chain:        Blockchain::new(),
         peers:        vec![],
         miner_wallet: Wallet::new(),
+        identity,
     }));
 
     HttpServer::new(move || {
@@ -235,6 +268,7 @@ pub async fn start_node(port: u16) -> std::io::Result<()> {
             .route("/status",            web::get().to(get_status))
             .route("/chain",             web::get().to(get_chain))
             .route("/mine",              web::get().to(mine))
+            .route("/identity",          web::get().to(get_identity))
             .route("/balance/{address}", web::get().to(get_balance))
             .route("/transactions/new",  web::post().to(new_transaction))
             .route("/peers/register",    web::post().to(register_peer))
