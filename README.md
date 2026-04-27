@@ -31,10 +31,10 @@ cd ~/qubit-topcoin/qtopcore
 cargo run --bin qtopcore -- 5003
 
 # Create a wallet
-cargo run --bin qtpwallet -- create
+cargo run --bin qtopwallet -- create
 
 # Check balance
-cargo run --bin qtpwallet -- balance
+cargo run --bin qtopwallet -- balance
 
 # Open block explorer
 open ../explorer.html
@@ -106,7 +106,7 @@ qubit-topcoin/
 │   ├── blockchain.py
 │   ├── node.py
 │   ├── wallet_manager.py
-│   ├── qtpwallet.py
+│   ├── qtopwallet.py
 │   └── miner.py
 │
 ├── qtopcore/ (Rust Production Node)

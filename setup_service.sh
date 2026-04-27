@@ -33,7 +33,7 @@ echo -e "Home directory: ${YELLOW}$HOME_DIR${NC}"
 echo ""
 
 # Create the service file
-sudo tee /etc/systemd/system/qtp-node.service > /dev/null << SERVICE
+sudo tee /etc/systemd/system/qtop-node.service > /dev/null << SERVICE
 [Unit]
 Description=Qubit TopCoin (QTOP) Node - Cori Testnet
 After=network.target
@@ -48,7 +48,7 @@ Restart=always
 RestartSec=10
 StandardOutput=journal
 StandardError=journal
-SyslogIdentifier=qtp-node
+SyslogIdentifier=qtop-node
 Environment=HOME=$HOME_DIR
 
 [Install]
@@ -62,11 +62,11 @@ sudo systemctl daemon-reload
 echo -e "${GREEN}✓ Systemd reloaded${NC}"
 
 # Enable service to start on boot
-sudo systemctl enable qtp-node
+sudo systemctl enable qtop-node
 echo -e "${GREEN}✓ Service enabled on boot${NC}"
 
 # Start the service
-sudo systemctl start qtp-node
+sudo systemctl start qtop-node
 echo -e "${GREEN}✓ Service started${NC}"
 
 echo ""
@@ -75,10 +75,10 @@ echo -e "${GREEN}  QTOP NODE IS NOW RUNNING AS A SERVICE${NC}"
 echo -e "${BLUE}=========================================${NC}"
 echo ""
 echo -e "Useful commands:"
-echo -e "  ${YELLOW}sudo systemctl status qtp-node${NC}   — Check status"
-echo -e "  ${YELLOW}sudo systemctl stop qtp-node${NC}     — Stop node"
-echo -e "  ${YELLOW}sudo systemctl restart qtp-node${NC}  — Restart node"
-echo -e "  ${YELLOW}sudo journalctl -u qtp-node -f${NC}   — View live logs"
+echo -e "  ${YELLOW}sudo systemctl status qtop-node${NC}   — Check status"
+echo -e "  ${YELLOW}sudo systemctl stop qtop-node${NC}     — Stop node"
+echo -e "  ${YELLOW}sudo systemctl restart qtop-node${NC}  — Restart node"
+echo -e "  ${YELLOW}sudo journalctl -u qtop-node -f${NC}   — View live logs"
 echo ""
 echo -e "Your node is running on port 5003"
 echo -e "Check status: ${YELLOW}curl http://localhost:5003/status${NC}"

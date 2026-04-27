@@ -95,7 +95,7 @@ fi
 
 cd "$HOME/qubit-topcoin/qtopcore"
 cargo build --release --bin qtopcore
-cargo build --release --bin qtpwallet
+cargo build --release --bin qtopwallet
 
 echo -e "${GREEN}✓ QTOP node built successfully${NC}"
 echo ""
@@ -120,7 +120,7 @@ cat > "$HOME/qubit-topcoin/wallet.sh" << 'WALLETSCRIPT'
 #!/bin/bash
 cd "$HOME/qubit-topcoin/qtopcore"
 source "$HOME/.cargo/env"
-./target/release/qtpwallet "$@"
+./target/release/qtopwallet "$@"
 WALLETSCRIPT
 
 chmod +x "$HOME/qubit-topcoin/wallet.sh"
