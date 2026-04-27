@@ -1,3 +1,0 @@
-cargo:rustc-link-lib=static=randomx
-cargo:rustc-link-search=/usr/local/lib
-cargo:rustc-link-lib=c++

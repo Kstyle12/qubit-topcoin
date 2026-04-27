@@ -4,3 +4,4 @@ __pycache__/
 qtpcore/qtp_chain.json
 *.qtp
 qtpcore/node_identity.json
+qtopcore/target/
