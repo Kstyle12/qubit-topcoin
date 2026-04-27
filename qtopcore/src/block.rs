@@ -123,7 +123,7 @@ impl Block {
     }
 
     pub fn genesis(difficulty: usize) -> Self {
-        println!("Creating QTP genesis block...");
+        println!("Creating QTOP genesis block...");
 
         let mut genesis = Block {
             index:         0,

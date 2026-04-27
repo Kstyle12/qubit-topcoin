@@ -1,7 +1,7 @@
 use std::net::ToSocketAddrs;
 
 // DNS seed hostnames — update these when cloud servers are deployed
-// These resolve to IP addresses of known QTP seed nodes
+// These resolve to IP addresses of known QTOP seed nodes
 const DNS_SEEDS: &[&str] = &[
     "seed1.qubittopcoin.org",
     "seed2.qubittopcoin.org",

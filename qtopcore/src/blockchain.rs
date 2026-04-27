@@ -17,7 +17,7 @@ pub struct Blockchain {
 impl Blockchain {
     pub fn new() -> Self {
         let difficulty = 2;
-        println!("Initializing QTP blockchain...");
+        println!("Initializing QTOP blockchain...");
 
         if let Some(saved_chain) = load_chain() {
             let height = saved_chain.len();

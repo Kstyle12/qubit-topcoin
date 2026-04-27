@@ -1340,7 +1340,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "qtpcore"
+name = "qtopcore"
 version = "0.1.0"
 dependencies = [
  "actix-cors",

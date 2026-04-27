@@ -3,7 +3,7 @@ name = "qtopcore"
 version = "0.1.0"
 edition = "2021"
 authors = ["Porter Kowalski"]
-description = "Qubit TopCoin (QTP) - Quantum-Resistant Cryptocurrency Node"
+description = "Qubit TopCoin (QTOP) - Quantum-Resistant Cryptocurrency Node"
 build = "build.rs"
 
 [[bin]]
