@@ -15,7 +15,7 @@ name = "send_tx"
 path = "src/bin/send_tx.rs"
 
 [[bin]]
-name = "qtpwallet"
+name = "qtopwallet"
 path = "src/bin/wallet_cli.rs"
 
 [[bin]]
