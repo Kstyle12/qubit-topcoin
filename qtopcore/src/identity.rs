@@ -64,6 +64,7 @@ impl NodeIdentity {
         hex::encode(signed.as_bytes())
     }
 
+    #[allow(dead_code)]
     pub fn verify(
         public_key_hex: &str,
         message:        &[u8],

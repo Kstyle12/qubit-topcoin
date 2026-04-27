@@ -1,5 +1,5 @@
 use pqcrypto_falcon::falcon512;
-use pqcrypto_traits::sign::{PublicKey, SecretKey, SignedMessage};
+use pqcrypto_traits::sign::{PublicKey, SignedMessage};
 use sha3::{Digest, Sha3_256};
 
 fn generate_address(public_key: &[u8]) -> String {

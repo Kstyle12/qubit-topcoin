@@ -39,11 +39,4 @@ impl Wallet {
         }
     }
 
-    pub fn public_key_hex(&self) -> String {
-        hex::encode(&self.public_key)
-    }
-
-    pub fn secret_key_hex(&self) -> String {
-        hex::encode(&self.secret_key)
-    }
 }

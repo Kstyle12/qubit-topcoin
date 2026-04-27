@@ -152,6 +152,7 @@ impl Blockchain {
         save_chain(&self.chain);
     }
 
+    #[allow(dead_code)]
     pub fn is_valid(&self) -> bool {
         for i in 1..self.chain.len() {
             let current  = &self.chain[i];

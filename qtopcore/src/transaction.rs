@@ -2,7 +2,7 @@ use pqcrypto_falcon::falcon512;
 use pqcrypto_traits::sign::{PublicKey, SecretKey, SignedMessage};
 use sha3::{Digest, Sha3_256};
 use serde::{Deserialize, Serialize};
-use std::time::{SystemTime, UNIX_EPOCH};
+
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TransactionData {
@@ -22,18 +22,6 @@ pub struct SignedTransaction {
 }
 
 impl TransactionData {
-    pub fn new(
-        sender:    String,
-        recipient: String,
-        amount:    u64,
-        fee:       u64,
-    ) -> Self {
-        let timestamp = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_secs();
-        TransactionData { sender, recipient, amount, fee, timestamp }
-    }
 
     pub fn to_bytes_rust(&self) -> Vec<u8> {
         // Rust native format — colon separated

@@ -7,12 +7,10 @@ use crate::wallet::Wallet;
 use crate::transaction::{TransactionData, SignedTransaction, verify_transaction, verify_detached};
 use crate::sync::sync_with_peers;
 use crate::identity::NodeIdentity;
-use crate::discovery;
 
 pub struct NodeState {
     pub chain:         Blockchain,
     pub peers:         Vec<String>,
-    pub miner_wallet:  Wallet,
     pub miner_address: String,
     pub identity:      NodeIdentity,
 }
@@ -84,9 +82,9 @@ async fn mine(state: web::Data<Mutex<NodeState>>) -> HttpResponse {
     }
 
     let miner_address = node.miner_address.clone();
-    let miner_wallet  = Wallet::new();
+    let temp_wallet   = Wallet::new();
 
-    node.chain.mine_pending_transactions(&miner_address, &miner_wallet);
+    node.chain.mine_pending_transactions(&miner_address, &temp_wallet);
 
     // Sign the new block hash with node identity
     let latest    = node.chain.latest_block();
@@ -212,48 +210,6 @@ async fn register_peer(
 }
 
 
-async fn mine_to_address(
-    state:   web::Data<Mutex<NodeState>>,
-    address: web::Path<String>,
-) -> HttpResponse {
-    let mut node = state.lock().unwrap();
-
-    if node.chain.mempool.is_empty() {
-        return HttpResponse::Ok().json(
-            serde_json::json!({"message": "No pending transactions"})
-        );
-    }
-
-    let miner_address = address.to_string();
-    let miner_wallet  = Wallet::new();
-
-    node.chain.mine_pending_transactions(&miner_address, &miner_wallet);
-
-    let latest    = node.chain.latest_block();
-    let signature = node.identity.sign(latest.hash.as_bytes());
-    let hash      = latest.hash.clone();
-    let height    = node.chain.height();
-    let reward    = node.chain.get_current_reward();
-
-    let peers = node.peers.clone();
-    drop(node);
-
-    for peer in &peers {
-        let _ = std::thread::spawn({
-            let peer = peer.clone();
-            move || { let _ = reqwest::blocking::get(format!("{}/peers/sync", peer)); }
-        }).join();
-    }
-
-    HttpResponse::Ok().json(serde_json::json!({
-        "message":   format!("Block {} mined", height - 1),
-        "hash":      hash,
-        "height":    height,
-        "reward":    reward,
-        "signature": signature,
-        "miner":     miner_address,
-    }))
-}
 
 
 async fn set_miner_address(
@@ -325,15 +281,15 @@ pub async fn start_node(port: u16, miner_addr: Option<String>) -> std::io::Resul
         println!("  Connected to {} peer(s)", reachable.len());
     }
 
-    let miner_wallet   = Wallet::new();
-    let default_miner  = miner_addr.unwrap_or_else(|| miner_wallet.address.clone());
+    let default_miner = miner_addr.unwrap_or_else(|| {
+        Wallet::new().address
+    });
     println!("  Mining rewards -> {}", &default_miner[..20]);
 
     let state = web::Data::new(Mutex::new(NodeState {
         chain:         Blockchain::new(),
         peers:         reachable,
         miner_address: default_miner,
-        miner_wallet,
         identity,
     }));
 
