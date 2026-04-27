@@ -2,7 +2,7 @@ import hashlib
 import json
 import time
 
-# --- QTP BLOCK STRUCTURE ---
+# --- QTOP BLOCK STRUCTURE ---
 # A block is a permanent, tamper-proof container of transactions
 # Once added to the chain, nothing inside can ever be changed
 
@@ -39,7 +39,7 @@ class Block:
             "nonce":         self.nonce
         }, sort_keys=True)
 
-        # SHA3-256 — QTP's chosen hash algorithm
+        # SHA3-256 — QTOP's chosen hash algorithm
         return hashlib.sha3_256(block_contents.encode()).hexdigest()
 
     def mine(self, difficulty):
@@ -79,7 +79,7 @@ class Block:
 
 # --- TEST IT ---
 print("=" * 55)
-print("  QTP BLOCK TEST")
+print("  QTOP BLOCK TEST")
 print("=" * 55)
 print("")
 
@@ -105,7 +105,7 @@ print(f"Valid: {genesis.is_valid()}")
 print("")
 
 # Mine it at difficulty 4 (hash must start with "0000")
-# This is low difficulty for testing — real QTP will be much higher
+# This is low difficulty for testing — real QTOP will be much higher
 print("Mining genesis block at difficulty 4...")
 genesis.mine(difficulty=4)
 print("")

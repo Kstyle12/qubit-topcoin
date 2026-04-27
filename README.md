@@ -1,8 +1,8 @@
-Qubit TopCoin (QTP)
+Qubit TopCoin (QTOP)
 
 > **Quantum-hardened digital gold. For everyone. Forever.**
 
-Qubit TopCoin is an open source, quantum-resistant cryptocurrency built from the ground up for the post-quantum era. Where Bitcoin and Ethereum rely on elliptic curve cryptography that quantum computers will eventually break, QTP is secured by FALCON-512 — a post-quantum signature scheme standardized by the US National Institute of Standards and Technology (NIST) in 2024.
+Qubit TopCoin is an open source, quantum-resistant cryptocurrency built from the ground up for the post-quantum era. Where Bitcoin and Ethereum rely on elliptic curve cryptography that quantum computers will eventually break, QTOP is secured by FALCON-512 — a post-quantum signature scheme standardized by the US National Institute of Standards and Technology (NIST) in 2024.
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Network](https://img.shields.io/badge/network-Cori%20Testnet-green.svg)]()
@@ -42,9 +42,9 @@ open ../explorer.html
 
 ---
 
-## Why QTP Exists
+## Why QTOP Exists
 
-Every major cryptocurrency today is vulnerable to a sufficiently powerful quantum computer. The threat is not theoretical — it is an engineering timeline. An adversary can harvest encrypted transactions today and decrypt them retroactively once quantum capability arrives. QTP is built to make that impossible, using cryptography designed to remain secure for generations.
+Every major cryptocurrency today is vulnerable to a sufficiently powerful quantum computer. The threat is not theoretical — it is an engineering timeline. An adversary can harvest encrypted transactions today and decrypt them retroactively once quantum capability arrives. QTOP is built to make that impossible, using cryptography designed to remain secure for generations.
 
 ---
 
@@ -52,11 +52,11 @@ Every major cryptocurrency today is vulnerable to a sufficiently powerful quantu
 
 | Property | Detail |
 |---|---|
-| Ticker | QTP |
-| Max Supply | 21,000,000 QTP |
-| Smallest Unit | 1 cori (0.00000001 QTP) |
+| Ticker | QTOP |
+| Max Supply | 21,000,000 QTOP |
+| Smallest Unit | 1 cori (0.00000001 QTOP) |
 | Block Time | 2.5 minutes (target) |
-| Block Reward | 50 QTP (halving every 210,000 blocks) |
+| Block Reward | 50 QTOP (halving every 210,000 blocks) |
 | Signatures | FALCON-512 (NIST Post-Quantum Standard 2024) |
 | Hashing | SHA-3 (Keccak-256) |
 | Mining | RandomX (CPU-native, ASIC-resistant) |
@@ -66,22 +66,22 @@ Every major cryptocurrency today is vulnerable to a sufficiently powerful quantu
 
 ---
 
-## What Makes QTP Different
+## What Makes QTOP Different
 
 **Quantum-resistant from block zero**
-Every other major cryptocurrency is retrofitting quantum resistance onto a vulnerable system. QTP is built with post-quantum cryptography as its foundation — not an afterthought.
+Every other major cryptocurrency is retrofitting quantum resistance onto a vulnerable system. QTOP is built with post-quantum cryptography as its foundation — not an afterthought.
 
 **CPU-native mining**
-QTP uses RandomX — the same algorithm that powers Monero — which is specifically designed to run best on ordinary CPUs. No ASICs. No GPU farms. A laptop mines QTP on equal terms with a datacenter.
+QTOP uses RandomX — the same algorithm that powers Monero — which is specifically designed to run best on ordinary CPUs. No ASICs. No GPU farms. A laptop mines QTOP on equal terms with a datacenter.
 
 **No premine. No advantage.**
-Every QTP in existence is earned through proof-of-work mining beginning at the genesis block. No developer allocation. No foundation reserve. No ICO. The first miner and the last miner play by identical rules.
+Every QTOP in existence is earned through proof-of-work mining beginning at the genesis block. No developer allocation. No foundation reserve. No ICO. The first miner and the last miner play by identical rules.
 
 **Long-term wealth storage**
-QTP is designed not just for today's threat landscape but for the next 50 years. FALCON-512 is secure against all currently known quantum algorithms.
+QTOP is designed not just for today's threat landscape but for the next 50 years. FALCON-512 is secure against all currently known quantum algorithms.
 
 **Accessible nodes**
-Pruned nodes require only ~20-30GB of storage — stable long-term. Anyone with a standard laptop can run a full validating QTP node forever.
+Pruned nodes require only ~20-30GB of storage — stable long-term. Anyone with a standard laptop can run a full validating QTOP node forever.
 
 ---
 
@@ -128,7 +128,7 @@ qubit-topcoin/
 
 ## Cori Testnet
 
-The Cori Testnet is QTP's active test network. Named after QTP's smallest unit of account (1 cori = 0.00000001 QTP), it is the proving ground for the protocol before mainnet launch.
+The Cori Testnet is QTOP's active test network. Named after QTOP's smallest unit of account (1 cori = 0.00000001 QTOP), it is the proving ground for the protocol before mainnet launch.
 
 To join — build and run a node following the Quick Start above, connect to a peer, and start mining. Your CPU is a first-class participant.
 
@@ -179,13 +179,13 @@ GET  /peers/sync          — Sync with peer chains
 
 ## Contributing
 
-QTP is built in public from day one. Contributions welcome — especially Rust developers, cryptographers, and P2P networking specialists.
+QTOP is built in public from day one. Contributions welcome — especially Rust developers, cryptographers, and P2P networking specialists.
 
 ---
 
 ## Whitepaper
 
-[QTP_Whitepaper.pdf](https://github.com/user-attachments/files/26834896/QTP_Whitepaper.pdf)
+[QTOP_Whitepaper.pdf](https://github.com/user-attachments/files/26834896/QTOP_Whitepaper.pdf)
 
 ---
 

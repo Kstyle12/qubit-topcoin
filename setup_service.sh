@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # =========================================
-#   QTP Node — Linux Service Setup
+#   QTOP Node — Linux Service Setup
 #   Run this after install.sh
 # =========================================
 
@@ -14,7 +14,7 @@ NC='\033[0m'
 
 echo ""
 echo -e "${BLUE}=========================================${NC}"
-echo -e "${BLUE}  QTP NODE SERVICE SETUP${NC}"
+echo -e "${BLUE}  QTOP NODE SERVICE SETUP${NC}"
 echo -e "${BLUE}=========================================${NC}"
 echo ""
 
@@ -35,7 +35,7 @@ echo ""
 # Create the service file
 sudo tee /etc/systemd/system/qtp-node.service > /dev/null << SERVICE
 [Unit]
-Description=Qubit TopCoin (QTP) Node - Cori Testnet
+Description=Qubit TopCoin (QTOP) Node - Cori Testnet
 After=network.target
 Wants=network-online.target
 
@@ -71,7 +71,7 @@ echo -e "${GREEN}✓ Service started${NC}"
 
 echo ""
 echo -e "${BLUE}=========================================${NC}"
-echo -e "${GREEN}  QTP NODE IS NOW RUNNING AS A SERVICE${NC}"
+echo -e "${GREEN}  QTOP NODE IS NOW RUNNING AS A SERVICE${NC}"
 echo -e "${BLUE}=========================================${NC}"
 echo ""
 echo -e "Useful commands:"

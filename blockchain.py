@@ -13,7 +13,7 @@ class Blockchain:
         self.chain               = [self.create_genesis_block()]
 
     def create_genesis_block(self):
-        print("Creating QTP genesis block...")
+        print("Creating QTOP genesis block...")
         genesis = Block(
             index=         0,
             transactions=  [{
@@ -55,7 +55,7 @@ class Blockchain:
             reverse=True
         )
         print(f"  Transaction added to mempool "
-              f"(fee: {transaction.get('fee', 0)} QTP). "
+              f"(fee: {transaction.get('fee', 0)} QTOP). "
               f"Pending: {len(self.mempool)}")
 
     def get_total_fees(self, transactions):
@@ -108,8 +108,8 @@ class Blockchain:
             "amount":    total_miner_payout,
             "fee":       0,
             "note":      f"Block {len(self.chain)} reward "
-                         f"({current_reward} QTP + "
-                         f"{total_fees:.4f} QTP fees)"
+                         f"({current_reward} QTOP + "
+                         f"{total_fees:.4f} QTOP fees)"
         }
 
         transactions = [reward_tx] + self.mempool
@@ -128,9 +128,9 @@ class Blockchain:
         self.mempool = []
 
         print(f"  Block {new_block.index} added to chain.")
-        print(f"  Miner earned {current_reward} QTP reward "
-              f"+ {total_fees:.4f} QTP fees "
-              f"= {total_miner_payout:.4f} QTP total")
+        print(f"  Miner earned {current_reward} QTOP reward "
+              f"+ {total_fees:.4f} QTOP fees "
+              f"= {total_miner_payout:.4f} QTOP total")
         return new_block
 
     def get_current_reward(self):
@@ -158,7 +158,7 @@ class Blockchain:
 
 # --- TEST ---
 print("=" * 55)
-print("  QTP BLOCKCHAIN TEST")
+print("  QTOP BLOCKCHAIN TEST")
 print("=" * 55)
 print("")
 
@@ -184,8 +184,8 @@ qtpchain.add_transaction({
 
 qtpchain.mine_pending_transactions(miner_address)
 
-print(f"\nBalance of miner:  {qtpchain.get_balance(miner_address)} QTP")
-print(f"Balance of sender: {qtpchain.get_balance(sender_address)} QTP")
+print(f"\nBalance of miner:  {qtpchain.get_balance(miner_address)} QTOP")
+print(f"Balance of sender: {qtpchain.get_balance(sender_address)} QTOP")
 
 valid = qtpchain.is_chain_valid()
 print(f"Chain valid: {valid}")

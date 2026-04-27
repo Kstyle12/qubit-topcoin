@@ -4,8 +4,8 @@ import requests
 from wallet_manager import generate_wallet, save_wallet, load_wallet
 from send_transaction import send_transaction
 
-# --- QTP COMMAND LINE WALLET ---
-# A real interactive wallet for the QTP network
+# --- QTOP COMMAND LINE WALLET ---
+# A real interactive wallet for the QTOP network
 # Ties together wallet generation, encryption, and transaction sending
 
 NODE_URL = "http://localhost:5001"
@@ -15,7 +15,7 @@ def clear():
 
 def print_header():
     print("=" * 55)
-    print("  QUBIT TOPCOIN (QTP) WALLET")
+    print("  QUBIT TOPCOIN (QTOP) WALLET")
     print("  Quantum-Resistant. For Everyone. Forever.")
     print("=" * 55)
     print("")
@@ -25,7 +25,7 @@ def print_menu():
     print("  1. Create new wallet")
     print("  2. Open existing wallet")
     print("  3. Check balance")
-    print("  4. Send QTP")
+    print("  4. Send QTOP")
     print("  5. Exit")
     print("")
 
@@ -139,7 +139,7 @@ def check_balance_flow(wallet):
         )
         data    = response.json()
         balance = data.get("balance", 0)
-        print(f"\n✓ Balance: {balance} QTP")
+        print(f"\n✓ Balance: {balance} QTOP")
         cori = int(balance * 100000000)
         print(f"         {cori} cori\n")
 
@@ -152,7 +152,7 @@ def check_balance_flow(wallet):
 def send_qtp_flow(wallet):
     clear()
     print_header()
-    print("=== SEND QTP ===\n")
+    print("=== SEND QTOP ===\n")
 
     if not wallet:
         print("No wallet open. Please create or open a wallet first.\n")
@@ -166,7 +166,7 @@ def send_qtp_flow(wallet):
         return
 
     try:
-        amount = float(input("Amount to send (QTP): "))
+        amount = float(input("Amount to send (QTOP): "))
         if amount <= 0:
             print("Amount must be greater than zero.")
             input("Press Enter to continue...")
@@ -186,18 +186,18 @@ def send_qtp_flow(wallet):
         balance = response.json().get("balance", 0)
         if balance < amount:
             print(f"\n✗ Insufficient funds.")
-            print(f"  Balance:  {balance} QTP")
-            print(f"  Required: {amount} QTP\n")
+            print(f"  Balance:  {balance} QTOP")
+            print(f"  Required: {amount} QTOP\n")
             input("Press Enter to continue...")
             return
-        print(f"  Balance: {balance} QTP — sufficient")
+        print(f"  Balance: {balance} QTOP — sufficient")
     except Exception:
         print("\n✗ Could not verify balance. Node may be offline.")
         confirm_anyway = input("Send anyway? (yes/no): ")
         if confirm_anyway.lower() != "yes":
             return
 
-    print(f"\nYou are about to send {amount} QTP to:")
+    print(f"\nYou are about to send {amount} QTOP to:")
     print(f"  {recipient}")
     confirm = input("\nConfirm? (yes/no): ")
 

@@ -9,7 +9,7 @@ from transaction import verify_transaction
 app = Flask(__name__)
 qtpchain = Blockchain()
 peers = set()
-miner_address = "QTP_NODE_MINER_ADDRESS"
+miner_address = "QTOP_NODE_MINER_ADDRESS"
 
 @app.route('/chain', methods=['GET'])
 def get_chain():
@@ -165,7 +165,7 @@ def sync_with_peers():
 if __name__ == '__main__':
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 5000
     print("=" * 55)
-    print(f"  QTP NODE STARTING ON PORT {port}")
+    print(f"  QTOP NODE STARTING ON PORT {port}")
     print("=" * 55)
     print(f"  Endpoints:")
     print(f"  GET  /status              — node info")

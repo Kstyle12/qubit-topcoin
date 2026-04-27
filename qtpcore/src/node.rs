@@ -296,7 +296,7 @@ async fn get_identity(state: web::Data<Mutex<NodeState>>) -> HttpResponse {
 
 pub async fn start_node(port: u16, miner_addr: Option<String>) -> std::io::Result<()> {
     println!("=========================================");
-    println!("  QTP NODE STARTING ON PORT {}", port);
+    println!("  QTOP NODE STARTING ON PORT {}", port);
     println!("=========================================");
     println!("Loading node identity...");
 

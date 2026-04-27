@@ -3,13 +3,13 @@ import hashlib
 import json
 import time
 
-# --- QTP TRANSACTION SYSTEM ---
+# --- QTOP TRANSACTION SYSTEM ---
 # A transaction proves: "I own these coins and I am sending them to you"
 # The FALCON-512 signature is the mathematical proof of ownership
 
 def create_transaction(sender_address, recipient_address, amount,
                        private_key_hex, fee=0.001):
-    # Fee defaults to 0.001 QTP — users can set higher for faster inclusion
+    # Fee defaults to 0.001 QTOP — users can set higher for faster inclusion
     transaction = {
         "sender":    sender_address,
         "recipient": recipient_address,
@@ -77,7 +77,7 @@ print(f"Sender:    {sender['address']}")
 print(f"Recipient: {recipient['address']}")
 print("")
 
-print("Creating transaction: 10 QTP + 0.001 QTP fee...")
+print("Creating transaction: 10 QTOP + 0.001 QTOP fee...")
 signed_tx = create_transaction(
     sender_address=    sender["address"],
     recipient_address= recipient["address"],
@@ -87,7 +87,7 @@ signed_tx = create_transaction(
 )
 
 print(f"Transaction Hash: {signed_tx['hash']}")
-print(f"Fee:              {signed_tx['transaction']['fee']} QTP")
+print(f"Fee:              {signed_tx['transaction']['fee']} QTOP")
 print(f"Signature:        {signed_tx['signature'][:40]}...")
 print("")
 

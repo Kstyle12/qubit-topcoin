@@ -12,7 +12,7 @@ fn register_miner(node_url: &str, address: &str) -> bool {
 }
 
 // =========================================
-//   QTP — Qubit TopCoin CPU Miner
+//   QTOP — Qubit TopCoin CPU Miner
 //   Cori Testnet
 //   Quantum-Resistant. For Everyone. Forever.
 // =========================================
@@ -26,7 +26,7 @@ const POLL_INTERVAL:  u64  = 5; // seconds between checks
 fn print_header() {
     println!("");
     println!("=========================================");
-    println!("  QTP CPU MINER");
+    println!("  QTOP CPU MINER");
     println!("  Quantum-Resistant. For Everyone. Forever.");
     println!("  Network: Cori Testnet");
     println!("=========================================");
@@ -93,7 +93,7 @@ fn main() {
         println!("Usage: miner <your_qtp_address> [node_url]");
         println!("Example: miner GRgnXA7g5fz58EU58nriyuUq4FwkxhL3vQ");
         println!("");
-        print!("Enter your QTP wallet address: ");
+        print!("Enter your QTOP wallet address: ");
         use std::io::Write;
         std::io::stdout().flush().unwrap();
         let mut input = String::new();
@@ -202,7 +202,7 @@ fn main() {
                                 elapsed.as_secs_f64()
                             );
                             println!(
-                                "  Reward:       {:.8} QTP",
+                                "  Reward:       {:.8} QTOP",
                                 reward as f64 / 100_000_000.0
                             );
                             println!(
@@ -210,7 +210,7 @@ fn main() {
                                 blocks_mined
                             );
                             println!(
-                                "  Total earned: {:.8} QTP",
+                                "  Total earned: {:.8} QTOP",
                                 total_earned as f64 / 100_000_000.0
                             );
                             println!(
@@ -221,7 +221,7 @@ fn main() {
                             // Check actual wallet balance
                             let balance = get_balance(&node_url, &miner_address);
                             println!(
-                                "  Wallet:       {:.8} QTP",
+                                "  Wallet:       {:.8} QTOP",
                                 balance as f64 / 100_000_000.0
                             );
                             println!("-----------------------------------------");

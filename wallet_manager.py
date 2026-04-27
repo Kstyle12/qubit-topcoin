@@ -8,8 +8,8 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes
 
-# --- QTP WALLET MANAGER ---
-# Generates, encrypts, saves, and loads QTP wallets
+# --- QTOP WALLET MANAGER ---
+# Generates, encrypts, saves, and loads QTOP wallets
 # Your private key is never stored in plain text
 
 def generate_wallet():
@@ -117,7 +117,7 @@ def load_wallet(filename: str, password: str):
 
 def create_new_wallet(filename: str):
     # Full flow — generate wallet, get password, save encrypted file
-    print("\n=== CREATE NEW QTP WALLET ===\n")
+    print("\n=== CREATE NEW QTOP WALLET ===\n")
 
     print("Generating FALCON-512 keypair...")
     wallet = generate_wallet()
@@ -145,7 +145,7 @@ def create_new_wallet(filename: str):
 
 def open_existing_wallet(filename: str):
     # Full flow — load encrypted wallet with password
-    print(f"\n=== OPEN QTP WALLET: {filename} ===\n")
+    print(f"\n=== OPEN QTOP WALLET: {filename} ===\n")
 
     password = getpass.getpass("Enter wallet password: ")
 
@@ -162,7 +162,7 @@ def open_existing_wallet(filename: str):
 # --- TEST IT ---
 if __name__ == "__main__":
     print("=" * 55)
-    print("  QTP WALLET MANAGER TEST")
+    print("  QTOP WALLET MANAGER TEST")
     print("=" * 55)
 
     # Create a new encrypted wallet

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Qubit TopCoin (QTP) Block Explorer</title>
+    <title>Qubit TopCoin (QTOP) Block Explorer</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -403,7 +403,7 @@
         </div>
         <div class="stat-card">
             <div class="stat-value">50</div>
-            <div class="stat-label">Block Reward (QTP)</div>
+            <div class="stat-label">Block Reward (QTOP)</div>
         </div>
         <div class="stat-card">
             <div class="stat-value">21M</div>
@@ -455,7 +455,7 @@
         type="text"
         class="search-box"
         id="searchInput"
-        placeholder="Enter a QTP address to check balance..."
+        placeholder="Enter a QTOP address to check balance..."
         onkeypress="handleSearch(event)"
     />
     <div class="balance-result" id="balanceResult">
@@ -478,7 +478,7 @@
 </div>
 
 <footer>
-    Qubit TopCoin (QTP) · Cori Testnet · MIT License ·
+    Qubit TopCoin (QTOP) · Cori Testnet · MIT License ·
     github.com/Kstyle12/qubit-topcoin ·
     For everyone. Forever.
 </footer>
@@ -492,8 +492,8 @@
         return new Date(ts * 1000).toLocaleString();
     }
 
-    function formatQTP(cori) {
-        return (cori / 100_000_000).toFixed(8) + ' QTP';
+    function formatQTOP(cori) {
+        return (cori / 100_000_000).toFixed(8) + ' QTOP';
     }
 
     function shortHash(hash) {
@@ -623,13 +623,13 @@
                     <div class="tx-row">
                         <span class="tx-label">Amount</span>
                         <span class="tx-value tx-amount">
-                            ${formatQTP(d.amount)}
+                            ${formatQTOP(d.amount)}
                         </span>
                     </div>
                     ${!isReward ? `
                     <div class="tx-row">
                         <span class="tx-label">Fee</span>
-                        <span class="tx-value tx-fee">${formatQTP(d.fee)}</span>
+                        <span class="tx-value tx-fee">${formatQTOP(d.fee)}</span>
                     </div>` : ''}
                     <div class="tx-row">
                         <span class="tx-label">Tx Hash</span>
@@ -662,7 +662,7 @@
             const data = await res.json();
 
             document.getElementById('balanceAmount').textContent =
-                formatQTP(data.balance);
+                formatQTOP(data.balance);
             document.getElementById('balanceAddress').textContent = address;
             document.getElementById('balanceResult').style.display = 'block';
         } catch(e) {

@@ -102,7 +102,7 @@ fn decrypt_key(
 }
 
 fn create_wallet(filename: &str) {
-    println!("\n=== CREATE NEW QTP WALLET ===\n");
+    println!("\n=== CREATE NEW QTOP WALLET ===\n");
 
     if Path::new(filename).exists() {
         print!("Wallet {} already exists. Overwrite? (yes/no): ", filename);
@@ -212,7 +212,7 @@ fn check_balance(filename: &str) {
                 Ok(data) => {
                     let balance = data["balance"].as_u64().unwrap_or(0);
                     let qtp     = balance as f64 / 100_000_000.0;
-                    println!("✓ Balance: {:.8} QTP", qtp);
+                    println!("✓ Balance: {:.8} QTOP", qtp);
                     println!("         {} cori\n", balance);
                 }
                 Err(_) => println!("Failed to parse response\n"),
@@ -226,7 +226,7 @@ fn check_balance(filename: &str) {
 }
 
 fn send_qtp(filename: &str) {
-    println!("\n=== SEND QTP ===\n");
+    println!("\n=== SEND QTOP ===\n");
 
     let (wallet, sk_bytes) = match load_and_decrypt(filename) {
         Some(w) => w,
@@ -241,7 +241,7 @@ fn send_qtp(filename: &str) {
     io::stdin().read_line(&mut recipient).unwrap();
     let recipient = recipient.trim().to_string();
 
-    print!("Amount (QTP): ");
+    print!("Amount (QTOP): ");
     io::stdout().flush().unwrap();
     let mut amount_str = String::new();
     io::stdin().read_line(&mut amount_str).unwrap();
@@ -250,7 +250,7 @@ fn send_qtp(filename: &str) {
         Err(_) => { println!("Invalid amount.\n"); return; }
     };
 
-    print!("Fee (QTP, default 0.001): ");
+    print!("Fee (QTOP, default 0.001): ");
     io::stdout().flush().unwrap();
     let mut fee_str = String::new();
     io::stdin().read_line(&mut fee_str).unwrap();
@@ -264,8 +264,8 @@ fn send_qtp(filename: &str) {
         .as_secs();
 
     println!("\nYou are about to send:");
-    println!("  Amount: {:.8} QTP", amount_qtp);
-    println!("  Fee:    {:.8} QTP", fee_qtp);
+    println!("  Amount: {:.8} QTOP", amount_qtp);
+    println!("  Fee:    {:.8} QTOP", fee_qtp);
     println!("  To:     {}", recipient);
     print!("\nConfirm? (yes/no): ");
     io::stdout().flush().unwrap();
@@ -326,12 +326,12 @@ fn show_address(filename: &str) {
 }
 
 fn show_help() {
-    println!("\n=== QTP WALLET CLI ===");
+    println!("\n=== QTOP WALLET CLI ===");
     println!("Quantum-Resistant. For Everyone. Forever.\n");
     println!("Usage:");
     println!("  qtpwallet create              Create new encrypted wallet");
     println!("  qtpwallet balance             Check wallet balance");
-    println!("  qtpwallet send                Send QTP");
+    println!("  qtpwallet send                Send QTOP");
     println!("  qtpwallet address             Show wallet address");
     println!("  qtpwallet help                Show this help\n");
     println!("Default wallet file: wallet.qtp");

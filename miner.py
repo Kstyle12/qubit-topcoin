@@ -3,16 +3,16 @@ import time
 import requests
 import threading
 
-# --- QTP MINER ---
-# A simple command line miner for the QTP network
-# Run this to start mining and earning QTP rewards
+# --- QTOP MINER ---
+# A simple command line miner for the QTOP network
+# Run this to start mining and earning QTOP rewards
 
 NODE_URL     = "http://localhost:5001"
 POLL_INTERVAL = 5  # seconds between mining attempts
 
 def print_header():
     print("=" * 55)
-    print("  QUBIT TOPCOIN (QTP) MINER")
+    print("  QUBIT TOPCOIN (QTOP) MINER")
     print("  Quantum-Resistant. For Everyone. Forever.")
     print("=" * 55)
     print("")
@@ -90,15 +90,15 @@ def mining_loop(miner_address):
 
                 print(f"[{timestamp()}] ✓ Block mined!")
                 print(f"  Hash:         {result.get('hash', '')[:40]}...")
-                print(f"  Reward:       {reward} QTP")
-                print(f"  Total earned: {total_earned} QTP "
+                print(f"  Reward:       {reward} QTOP")
+                print(f"  Total earned: {total_earned} QTOP "
                       f"({blocks_mined} blocks)")
                 print(f"  Mining time:  {elapsed:.0f}s total")
 
                 # Check wallet balance
                 balance = check_balance(miner_address)
                 if balance is not None:
-                    print(f"  Wallet balance: {balance} QTP")
+                    print(f"  Wallet balance: {balance} QTOP")
                 print("-" * 55)
 
             time.sleep(POLL_INTERVAL)
@@ -108,7 +108,7 @@ def mining_loop(miner_address):
             print(f"  MINING STOPPED")
             print(f"{'=' * 55}")
             print(f"  Blocks mined:  {blocks_mined}")
-            print(f"  Total earned:  {total_earned} QTP")
+            print(f"  Total earned:  {total_earned} QTOP")
             print(f"  Time elapsed:  {time.time() - start_time:.0f}s")
             print(f"{'=' * 55}\n")
             sys.exit(0)
@@ -126,7 +126,7 @@ def main():
         print("Usage: python3 miner.py <your_qtp_address>")
         print("Example: python3 miner.py GbtE3vPeomLSRNN2k9DsDfy8YL164JXMw2")
         print("")
-        miner_address = input("Enter your QTP wallet address: ").strip()
+        miner_address = input("Enter your QTOP wallet address: ").strip()
         if not miner_address:
             print("No address provided. Exiting.")
             sys.exit(1)

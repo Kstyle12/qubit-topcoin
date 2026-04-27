@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # =========================================
-#   QTP — Qubit TopCoin Node Installer
+#   QTOP — Qubit TopCoin Node Installer
 #   Cori Testnet
 #   github.com/Kstyle12/qubit-topcoin
 # =========================================
@@ -16,7 +16,7 @@ NC='\033[0m'
 
 echo ""
 echo -e "${BLUE}=========================================${NC}"
-echo -e "${BLUE}  QUBIT TOPCOIN (QTP) NODE INSTALLER${NC}"
+echo -e "${BLUE}  QUBIT TOPCOIN (QTOP) NODE INSTALLER${NC}"
 echo -e "${BLUE}  Cori Testnet${NC}"
 echo -e "${BLUE}=========================================${NC}"
 echo ""
@@ -82,8 +82,8 @@ else
 fi
 echo ""
 
-# ---- STEP 4: Clone and build QTP ----
-echo -e "${BLUE}[4/5] Building QTP node...${NC}"
+# ---- STEP 4: Clone and build QTOP ----
+echo -e "${BLUE}[4/5] Building QTOP node...${NC}"
 
 if [ ! -d "$HOME/qubit-topcoin" ]; then
     git clone https://github.com/Kstyle12/qubit-topcoin.git "$HOME/qubit-topcoin"
@@ -97,7 +97,7 @@ cd "$HOME/qubit-topcoin/qtpcore"
 cargo build --release --bin qtpcore
 cargo build --release --bin qtpwallet
 
-echo -e "${GREEN}✓ QTP node built successfully${NC}"
+echo -e "${GREEN}✓ QTOP node built successfully${NC}"
 echo ""
 
 # ---- STEP 5: Create startup script ----
@@ -109,7 +109,7 @@ cd "$HOME/qubit-topcoin/qtpcore"
 source "$HOME/.cargo/env"
 
 PORT=${1:-5003}
-echo "Starting QTP node on port $PORT..."
+echo "Starting QTOP node on port $PORT..."
 ./target/release/qtpcore $PORT
 STARTSCRIPT
 
@@ -130,7 +130,7 @@ echo ""
 
 # ---- DONE ----
 echo -e "${BLUE}=========================================${NC}"
-echo -e "${GREEN}  QTP NODE INSTALLATION COMPLETE!${NC}"
+echo -e "${GREEN}  QTOP NODE INSTALLATION COMPLETE!${NC}"
 echo -e "${BLUE}=========================================${NC}"
 echo ""
 echo -e "To start your node:"

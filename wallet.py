@@ -2,13 +2,13 @@ import oqs
 import hashlib
 import base58
 
-# --- GENERATE A QTP WALLET ---
+# --- GENERATE A QTOP WALLET ---
 # This creates a brand new quantum-resistant keypair using FALCON-512
-# Every QTP wallet starts exactly here
+# Every QTOP wallet starts exactly here
 
 def generate_wallet():
     # Step 1: Create a FALCON-512 signing object
-    # This is the quantum-resistant algorithm we chose for QTP
+    # This is the quantum-resistant algorithm we chose for QTOP
     signer = oqs.Signature("Falcon-512")
 
     # Step 2: Generate the public and private keys
@@ -26,7 +26,7 @@ def generate_wallet():
     # This is the same approach Bitcoin uses for addresses
     address_bytes = sha3_hash[-20:]
 
-    # Step 5: Add QTP version byte so address starts with "QT"
+    # Step 5: Add QTOP version byte so address starts with "QT"
     # 0x26 is a version prefix that produces QT addresses in Base58
     versioned = bytes([0x26]) + address_bytes
 
@@ -45,7 +45,7 @@ def generate_wallet():
     }
 
 # --- RUN IT ---
-print("Generating your QTP wallet...")
+print("Generating your QTOP wallet...")
 print("")
 wallet = generate_wallet()
 print(f"Address:     {wallet['address']}")
