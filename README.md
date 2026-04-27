@@ -25,10 +25,10 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 brew install cmake
 git clone https://github.com/tevador/RandomX.git /tmp/randomx
 cd /tmp/randomx && mkdir build && cd build && cmake .. && make && sudo make install
-cd ~/qubit-topcoin/qtpcore
+cd ~/qubit-topcoin/qtopcore
 
 # Run a node
-cargo run --bin qtpcore -- 5003
+cargo run --bin qtopcore -- 5003
 
 # Create a wallet
 cargo run --bin qtpwallet -- create
@@ -109,7 +109,7 @@ qubit-topcoin/
 │   ├── qtpwallet.py
 │   └── miner.py
 │
-├── qtpcore/ (Rust Production Node)
+├── qtopcore/ (Rust Production Node)
 │   └── src/
 │       ├── wallet.rs
 │       ├── transaction.rs

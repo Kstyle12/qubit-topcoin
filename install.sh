@@ -93,8 +93,8 @@ else
     git pull
 fi
 
-cd "$HOME/qubit-topcoin/qtpcore"
-cargo build --release --bin qtpcore
+cd "$HOME/qubit-topcoin/qtopcore"
+cargo build --release --bin qtopcore
 cargo build --release --bin qtpwallet
 
 echo -e "${GREEN}✓ QTOP node built successfully${NC}"
@@ -105,12 +105,12 @@ echo -e "${BLUE}[5/5] Creating startup script...${NC}"
 
 cat > "$HOME/qubit-topcoin/start_node.sh" << 'STARTSCRIPT'
 #!/bin/bash
-cd "$HOME/qubit-topcoin/qtpcore"
+cd "$HOME/qubit-topcoin/qtopcore"
 source "$HOME/.cargo/env"
 
 PORT=${1:-5003}
 echo "Starting QTOP node on port $PORT..."
-./target/release/qtpcore $PORT
+./target/release/qtopcore $PORT
 STARTSCRIPT
 
 chmod +x "$HOME/qubit-topcoin/start_node.sh"
@@ -118,7 +118,7 @@ chmod +x "$HOME/qubit-topcoin/start_node.sh"
 # Create wallet shortcut
 cat > "$HOME/qubit-topcoin/wallet.sh" << 'WALLETSCRIPT'
 #!/bin/bash
-cd "$HOME/qubit-topcoin/qtpcore"
+cd "$HOME/qubit-topcoin/qtopcore"
 source "$HOME/.cargo/env"
 ./target/release/qtpwallet "$@"
 WALLETSCRIPT

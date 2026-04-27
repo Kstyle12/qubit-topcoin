@@ -42,8 +42,8 @@ Wants=network-online.target
 [Service]
 Type=simple
 User=$USER
-WorkingDirectory=$HOME_DIR/qubit-topcoin/qtpcore
-ExecStart=$HOME_DIR/qubit-topcoin/qtpcore/target/release/qtpcore 5003
+WorkingDirectory=$HOME_DIR/qubit-topcoin/qtopcore
+ExecStart=$HOME_DIR/qubit-topcoin/qtopcore/target/release/qtopcore 5003
 Restart=always
 RestartSec=10
 StandardOutput=journal
