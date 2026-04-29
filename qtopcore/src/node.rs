@@ -49,7 +49,7 @@ pub struct StatusResponse {
 pub struct BalanceResponse {
     pub address: String,
     pub balance: u64,
-    pub qtp:     f64,
+    pub qtop:    f64,
 }
 
 async fn get_status(state: web::Data<Mutex<NodeState>>) -> HttpResponse {
@@ -181,7 +181,7 @@ async fn get_balance(
     HttpResponse::Ok().json(BalanceResponse {
         address: address.to_string(),
         balance,
-        qtp: balance as f64 / 100_000_000.0,
+        qtop: balance as f64 / 100_000_000.0,
     })
 }
 

@@ -90,7 +90,7 @@ fn main() {
     let miner_address = if args.len() > 1 {
         args[1].clone()
     } else {
-        println!("Usage: miner <your_qtp_address> [node_url]");
+        println!("Usage: miner <your_qtop_address> [node_url]");
         println!("Example: miner GRgnXA7g5fz58EU58nriyuUq4FwkxhL3vQ");
         println!("");
         print!("Enter your QTOP wallet address: ");

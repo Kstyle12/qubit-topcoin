@@ -159,7 +159,7 @@ fn create_wallet(filename: &str) {
 fn load_and_decrypt(filename: &str) -> Option<(WalletFile, Vec<u8>)> {
     if !Path::new(filename).exists() {
         println!("Wallet file {} not found.", filename);
-        println!("Create one with: qtpwallet create\n");
+        println!("Create one with: qtopwallet create\n");
         return None;
     }
 
@@ -225,7 +225,7 @@ fn check_balance(filename: &str) {
     }
 }
 
-fn send_qtp(filename: &str) {
+fn send_qtop(filename: &str) {
     println!("\n=== SEND QTOP ===\n");
 
     let (wallet, sk_bytes) = match load_and_decrypt(filename) {
@@ -329,24 +329,24 @@ fn show_help() {
     println!("\n=== QTOP WALLET CLI ===");
     println!("Quantum-Resistant. For Everyone. Forever.\n");
     println!("Usage:");
-    println!("  qtpwallet create              Create new encrypted wallet");
-    println!("  qtpwallet balance             Check wallet balance");
-    println!("  qtpwallet send                Send QTOP");
-    println!("  qtpwallet address             Show wallet address");
-    println!("  qtpwallet help                Show this help\n");
-    println!("Default wallet file: wallet.qtp");
+    println!("  qtopwallet create              Create new encrypted wallet");
+    println!("  qtopwallet balance             Check wallet balance");
+    println!("  qtopwallet send                Send QTOP");
+    println!("  qtopwallet address             Show wallet address");
+    println!("  qtopwallet help                Show this help\n");
+    println!("Default wallet file: wallet.qtop");
     println!("Default node:        {}\n", NODE_URL);
 }
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let command  = args.get(1).map(|s| s.as_str()).unwrap_or("help");
-    let filename = args.get(2).map(|s| s.as_str()).unwrap_or("wallet.qtp");
+    let filename = args.get(2).map(|s| s.as_str()).unwrap_or("wallet.qtop");
 
     match command {
         "create"  => create_wallet(filename),
         "balance" => check_balance(filename),
-        "send"    => send_qtp(filename),
+        "send"    => send_qtop(filename),
         "address" => show_address(filename),
         _         => show_help(),
     }
