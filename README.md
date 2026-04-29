@@ -26,11 +26,11 @@ cd qubit-topcoin
 chmod +x install.sh && ./install.sh
 
 # Create a wallet
-cd qtpcore
-cargo run --bin qtpwallet -- create
+cd qtopcore
+cargo run --bin qtopwallet -- create
 
 # Start a node (rewards paid to your wallet address)
-cargo run --bin qtpcore -- 5003 YOUR_QTOP_ADDRESS
+cargo run --bin qtopcore -- 5003 YOUR_QTOP_ADDRESS
 
 # Start mining
 cargo run --bin miner -- YOUR_QTOP_ADDRESS
@@ -119,13 +119,13 @@ makes QTOP a credible generational store of value.
 ## Running a Node
 
 ```bash
-cd qtpcore
+cd qtopcore
 
 # Basic node (rewards go to internal wallet)
-cargo run --bin qtpcore -- 5003
+cargo run --bin qtopcore -- 5003
 
 # Node with your wallet address (recommended)
-cargo run --bin qtpcore -- 5003 YOUR_QTOP_ADDRESS
+cargo run --bin qtopcore -- 5003 YOUR_QTOP_ADDRESS
 
 # Check node status
 curl http://localhost:5003/status
@@ -139,7 +139,7 @@ curl http://localhost:5003/balance/YOUR_QTOP_ADDRESS
 ## Mining
 
 ```bash
-cd qtpcore
+cd qtopcore
 
 # Start the CPU miner
 cargo run --bin miner -- YOUR_QTOP_ADDRESS
@@ -161,19 +161,19 @@ The miner automatically:
 ## Wallet
 
 ```bash
-cd qtpcore
+cd qtopcore
 
 # Create new encrypted wallet
-cargo run --bin qtpwallet -- create
+cargo run --bin qtopwallet -- create
 
 # Check balance
-cargo run --bin qtpwallet -- balance
+cargo run --bin qtopwallet -- balance
 
 # Send QTOP
-cargo run --bin qtpwallet -- send
+cargo run --bin qtopwallet -- send
 
 # Show address
-cargo run --bin qtpwallet -- address
+cargo run --bin qtopwallet -- address
 ```
 
 Wallets are encrypted with AES-256-GCM and PBKDF2 key derivation.
@@ -203,10 +203,10 @@ curl -sSL https://raw.githubusercontent.com/Kstyle12/qubit-topcoin/main/install.
 curl -sSL https://raw.githubusercontent.com/Kstyle12/qubit-topcoin/main/setup_service.sh | bash
 
 # Check service status
-sudo systemctl status qtp-node
+sudo systemctl status qtop-node
 
 # View live logs
-sudo journalctl -u qtp-node -f
+sudo journalctl -u qtop-node -f
 ```
 
 ---
@@ -237,7 +237,7 @@ qubit-topcoin/
 │   ├── qtpwallet.py
 │   └── miner.py
 │
-├── qtpcore/                  # Production Rust node
+├── qtopcore/                 # Production Rust node
 │   └── src/
 │       ├── wallet.rs         # FALCON-512 keypair generation
 │       ├── transaction.rs    # Signing and verification
