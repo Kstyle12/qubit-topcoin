@@ -1,684 +1,337 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Qubit TopCoin (QTOP) Block Explorer</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            background: #0a0e1a;
-            color: #e2e8f0;
-            font-family: 'Courier New', monospace;
-            min-height: 100vh;
-        }
-
-        header {
-            background: linear-gradient(135deg, #1a3a6b, #0a0e1a);
-            border-bottom: 2px solid #2563eb;
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #60a5fa;
-            letter-spacing: 2px;
-        }
-
-        .logo span { color: #2563eb; }
-
-        .tagline {
-            font-size: 11px;
-            color: #64748b;
-            letter-spacing: 1px;
-        }
-
-        .node-status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #22c55e;
-            animation: pulse 2s infinite;
-        }
-
-        .status-dot.offline {
-            background: #ef4444;
-            animation: none;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 30px 20px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: #111827;
-            border: 1px solid #1e3a5f;
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 28px;
-            font-weight: bold;
-            color: #60a5fa;
-            margin-bottom: 4px;
-        }
-
-        .stat-label {
-            font-size: 11px;
-            color: #64748b;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        .section-title {
-            font-size: 14px;
-            color: #60a5fa;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 16px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #1e3a5f;
-        }
-
-        .identity-card {
-            background: #111827;
-            border: 1px solid #2563eb;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
-        }
-
-        .identity-row {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 12px;
-            align-items: flex-start;
-        }
-
-        .identity-row:last-child { margin-bottom: 0; }
-
-        .identity-label {
-            font-size: 11px;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            min-width: 120px;
-            padding-top: 2px;
-        }
-
-        .identity-value {
-            font-size: 11px;
-            color: #94a3b8;
-            word-break: break-all;
-            flex: 1;
-            padding: 6px 10px;
-            background: #0a0e1a;
-            border-radius: 4px;
-            border: 1px solid #1e3a5f;
-        }
-
-        .identity-value.highlight {
-            color: #60a5fa;
-            font-size: 14px;
-            font-weight: bold;
-        }
-
-        .quantum-badge {
-            display: inline-block;
-            background: #1e3a5f;
-            color: #60a5fa;
-            padding: 3px 10px;
-            border-radius: 4px;
-            font-size: 10px;
-            letter-spacing: 1px;
-            margin-left: 8px;
-            border: 1px solid #2563eb;
-        }
-
-        .block-card {
-            background: #111827;
-            border: 1px solid #1e3a5f;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 12px;
-            cursor: pointer;
-            transition: border-color 0.2s;
-        }
-
-        .block-card:hover { border-color: #2563eb; }
-        .block-card.expanded { border-color: #2563eb; }
-
-        .block-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .block-number {
-            font-size: 20px;
-            font-weight: bold;
-            color: #2563eb;
-        }
-
-        .block-time {
-            font-size: 11px;
-            color: #64748b;
-        }
-
-        .block-hash {
-            font-size: 11px;
-            color: #94a3b8;
-            word-break: break-all;
-            margin-bottom: 8px;
-            padding: 8px;
-            background: #0a0e1a;
-            border-radius: 4px;
-        }
-
-        .block-meta {
-            display: flex;
-            gap: 20px;
-            font-size: 12px;
-            color: #64748b;
-        }
-
-        .block-meta span { color: #94a3b8; }
-
-        .tx-list {
-            margin-top: 16px;
-            display: none;
-        }
-
-        .block-card.expanded .tx-list { display: block; }
-
-        .tx-card {
-            background: #0a0e1a;
-            border: 1px solid #1e3a5f;
-            border-radius: 6px;
-            padding: 12px;
-            margin-bottom: 8px;
-            font-size: 11px;
-        }
-
-        .tx-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 4px;
-        }
-
-        .tx-label {
-            color: #64748b;
-            min-width: 80px;
-        }
-
-        .tx-value {
-            color: #94a3b8;
-            word-break: break-all;
-            text-align: right;
-            flex: 1;
-            padding-left: 10px;
-        }
-
-        .tx-amount { color: #22c55e; font-weight: bold; }
-        .tx-fee    { color: #f59e0b; }
-
-        .network-badge {
-            background: #1e3a5f;
-            color: #60a5fa;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 10px;
-            letter-spacing: 1px;
-        }
-
-        .search-box {
-            width: 100%;
-            background: #111827;
-            border: 1px solid #1e3a5f;
-            border-radius: 8px;
-            padding: 12px 16px;
-            color: #e2e8f0;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            margin-bottom: 24px;
-            outline: none;
-        }
-
-        .search-box:focus { border-color: #2563eb; }
-        .search-box::placeholder { color: #475569; }
-
-        .balance-result {
-            background: #111827;
-            border: 1px solid #22c55e;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 24px;
-            display: none;
-        }
-
-        .balance-amount {
-            font-size: 32px;
-            font-weight: bold;
-            color: #22c55e;
-            margin-bottom: 4px;
-        }
-
-        .balance-address {
-            font-size: 11px;
-            color: #64748b;
-            word-break: break-all;
-        }
-
-        .empty-state {
-            text-align: center;
-            color: #475569;
-            padding: 40px;
-            font-size: 13px;
-        }
-
-        .refresh-btn {
-            background: #1e3a5f;
-            color: #60a5fa;
-            border: 1px solid #2563eb;
-            border-radius: 6px;
-            padding: 8px 16px;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            cursor: pointer;
-            transition: background 0.2s;
-            float: right;
-        }
-
-        .refresh-btn:hover { background: #2563eb; color: white; }
-
-        .peers-list {
-            background: #111827;
-            border: 1px solid #1e3a5f;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 30px;
-        }
-
-        .peer-item {
-            font-size: 12px;
-            color: #94a3b8;
-            padding: 6px 0;
-            border-bottom: 1px solid #1e3a5f;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .peer-item:last-child { border-bottom: none; }
-
-        footer {
-            text-align: center;
-            padding: 30px;
-            color: #475569;
-            font-size: 11px;
-            border-top: 1px solid #1e3a5f;
-            margin-top: 40px;
-        }
-
-        .loading {
-            color: #475569;
-            font-size: 12px;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .pk-truncated {
-            font-size: 10px;
-            color: #475569;
-            cursor: pointer;
-        }
-
-        .pk-truncated:hover { color: #94a3b8; }
-    </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>QTOP Explorer — Cori Testnet</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#1a1a18;color:#e8e6e0;font-family:system-ui,sans-serif;font-size:14px;min-height:100vh}
+a{text-decoration:none;color:inherit}
+nav{background:#141412;border-bottom:0.5px solid rgba(255,255,255,0.08);padding:0 2rem;height:60px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:10px}
+.logo-icon{width:32px;height:32px;border-radius:8px;background:#1D9E75;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;font-family:monospace}
+.logo-text{font-size:13px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:#e8e6e0}
+.logo-sub{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#666;margin-top:1px}
+.nav-search{display:flex;align-items:center;background:#222220;border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 14px;gap:8px;width:380px}
+.nav-search input{background:transparent;border:none;outline:none;color:#e8e6e0;font-size:13px;width:100%;font-family:system-ui,sans-serif}
+.nav-search input::placeholder{color:#555}
+.nav-search svg{width:14px;height:14px;stroke:#666;fill:none;stroke-width:2;flex-shrink:0}
+.nav-tabs{display:flex;border-bottom:0.5px solid rgba(255,255,255,0.08);background:#141412;padding:0 2rem}
+.tab{padding:12px 20px;font-size:13px;color:#888;cursor:pointer;border-bottom:2px solid transparent;display:flex;align-items:center;gap:6px;transition:color 0.15s}
+.tab:hover{color:#e8e6e0}
+.tab.active{color:#1D9E75;border-bottom-color:#1D9E75}
+.tab svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.hero-bar{background:#1e1e1c;border-bottom:0.5px solid rgba(255,255,255,0.06);padding:1.5rem 2rem}
+.stats-row{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.08);border-radius:10px;overflow:hidden;margin-bottom:1.25rem}
+.stat{background:#1a1a18;padding:1.1rem 1.25rem}
+.stat-l{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#666;margin-bottom:5px}
+.stat-v{font-size:16px;font-weight:500;font-family:monospace;color:#e8e6e0}
+.stat-v.green{color:#1D9E75}
+.network-status-box{background:#1a1a18;border:0.5px solid rgba(29,158,117,0.3);border-radius:10px;padding:1.25rem 1.5rem;display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+.ns-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#666;margin-bottom:5px}
+.ns-value{font-size:13px;font-family:monospace;color:#e8e6e0}
+.ns-value.green{color:#1D9E75}
+.ns-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#1D9E75;margin-right:6px}
+.ns-title{font-size:11px;font-weight:500;color:#1D9E75;text-transform:uppercase;letter-spacing:1px;margin-bottom:0.75rem;display:flex;align-items:center;gap:6px}
+.supply-bar-wrap{background:#1a1a18;border-radius:6px;height:6px;overflow:hidden;margin-top:6px;border:0.5px solid rgba(255,255,255,0.06)}
+.supply-bar{height:100%;background:#1D9E75;border-radius:6px}
+.main{padding:1.5rem 2rem;display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.section-title{font-size:15px;font-weight:500;color:#e8e6e0}
+.view-more{font-size:12px;color:#1D9E75;cursor:pointer;display:flex;align-items:center;gap:4px}
+.view-more svg{width:12px;height:12px;stroke:#1D9E75;fill:none;stroke-width:2}
+.block-card{background:#222220;border:0.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:1.25rem;margin-bottom:10px;cursor:pointer;transition:border-color 0.15s}
+.block-card:hover{border-color:rgba(29,158,117,0.4)}
+.block-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem}
+.block-icon{width:30px;height:30px;border-radius:8px;background:rgba(29,158,117,0.15);display:flex;align-items:center;justify-content:center}
+.block-icon svg{width:13px;height:13px;stroke:#1D9E75;fill:none;stroke-width:2}
+.block-num-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#666;margin-bottom:2px}
+.block-num{font-size:20px;font-weight:600;font-family:monospace;color:#e8e6e0}
+.block-timestamp{font-size:11px;color:#666}
+.block-meta-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;margin-top:0.75rem;padding-top:0.75rem;border-top:0.5px solid rgba(255,255,255,0.06)}
+.bml{font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#666;margin-bottom:3px}
+.bmv{font-size:12px;color:#e8e6e0;font-family:monospace}
+.mined-by{margin-top:0.75rem;padding-top:0.75rem;border-top:0.5px solid rgba(255,255,255,0.06)}
+.mined-label{font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#666;margin-bottom:3px}
+.mined-addr{font-size:11px;font-family:monospace;color:#1D9E75;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tx-card{background:#222220;border:0.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:1.25rem;margin-bottom:10px;cursor:pointer;transition:border-color 0.15s}
+.tx-card:hover{border-color:rgba(29,158,117,0.4)}
+.tx-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem}
+.tx-icon{width:28px;height:28px;border-radius:50%;background:rgba(29,158,117,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tx-icon svg{width:12px;height:12px;stroke:#1D9E75;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tx-title{font-size:13px;font-weight:500;color:#e8e6e0}
+.tx-time{font-size:11px;color:#666}
+.status-pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:500}
+.status-confirmed{background:rgba(29,158,117,0.15);color:#1D9E75}
+.tx-hash{font-size:11px;font-family:monospace;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:6px 0}
+.tx-addr{font-family:monospace;color:#1D9E75}
+.tx-amount{font-size:13px;font-weight:500;color:#e8e6e0;font-family:monospace}
+.panel{background:#222220;border:0.5px solid rgba(255,255,255,0.08);border-radius:10px;overflow:hidden}
+.addr-panel{background:#222220;border:0.5px solid rgba(255,255,255,0.08);border-radius:10px;padding:1.5rem}
+.addr-search{display:flex;gap:8px;margin-bottom:1.5rem}
+.addr-search input{flex:1;background:#1a1a18;border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 14px;font-size:13px;font-family:monospace;color:#e8e6e0;outline:none}
+.addr-search input:focus{border-color:#1D9E75}
+.addr-search input::placeholder{color:#555}
+.addr-search button{padding:10px 20px;background:#1D9E75;color:#fff;border:none;border-radius:8px;font-size:13px;font-family:system-ui,sans-serif;cursor:pointer;font-weight:500}
+.addr-search button:hover{background:#0F6E56}
+.addr-result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.08);border-radius:8px;overflow:hidden}
+.addr-stat{background:#1a1a18;padding:1.25rem}
+.addr-stat-l{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#666;margin-bottom:6px}
+.addr-stat-v{font-size:18px;font-weight:500;font-family:monospace;color:#1D9E75}
+.addr-placeholder{text-align:center;padding:3rem;color:#555;font-size:13px}
+th{text-align:left;padding:11px 16px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#666;font-weight:400;background:#1e1e1c;border-bottom:0.5px solid rgba(255,255,255,0.08)}
+td{padding:11px 16px;border-bottom:0.5px solid rgba(255,255,255,0.05);font-size:13px}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.node-info{display:flex;align-items:center;gap:6px;font-size:11px;color:#666;padding:0.75rem 2rem;border-top:0.5px solid rgba(255,255,255,0.06);background:#141412}
+.node-dot{width:6px;height:6px;border-radius:50%;background:#1D9E75}
+</style>
 </head>
 <body>
-
-<header>
+<nav>
+  <div class="nav-logo">
+    <div class="logo-icon">Q</div>
     <div>
-        <div class="logo">QUBIT <span>TOP</span>COIN</div>
-        <div class="tagline">Quantum-Resistant · For Everyone · Forever</div>
+      <div class="logo-text">QTOP Explorer</div>
+      <div class="logo-sub">Cori Testnet</div>
     </div>
-    <div style="text-align: center;">
-        <div class="network-badge">CORI TESTNET</div>
-    </div>
-    <div class="node-status">
-        <div class="status-dot" id="statusDot"></div>
-        <span id="statusText">Connecting...</span>
-    </div>
-</header>
-
-<div class="container">
-
-    <!-- Stats -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-value" id="blockHeight">—</div>
-            <div class="stat-label">Block Height</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value" id="pendingTxs">—</div>
-            <div class="stat-label">Pending Txs</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value" id="difficulty">—</div>
-            <div class="stat-label">Difficulty</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value" id="peerCount">—</div>
-            <div class="stat-label">Peers</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value">50</div>
-            <div class="stat-label">Block Reward (QTOP)</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value">21M</div>
-            <div class="stat-label">Max Supply</div>
-        </div>
-    </div>
-
-    <!-- Node Identity -->
-    <div class="section-title">
-        Node Identity
-        <span class="quantum-badge">FALCON-512 AUTHENTICATED</span>
-    </div>
-    <div class="identity-card">
-        <div class="identity-row">
-            <div class="identity-label">Node ID</div>
-            <div class="identity-value highlight" id="nodeId">Loading...</div>
-        </div>
-        <div class="identity-row">
-            <div class="identity-label">Algorithm</div>
-            <div class="identity-value">FALCON-512 — NIST Post-Quantum Standard 2024</div>
-        </div>
-        <div class="identity-row">
-            <div class="identity-label">Public Key</div>
-            <div class="identity-value">
-                <span id="pkShort" class="pk-truncated" onclick="togglePK()">
-                    Click to reveal full public key
-                </span>
-                <span id="pkFull" style="display:none; word-break:break-all;"></span>
-            </div>
-        </div>
-        <div class="identity-row">
-            <div class="identity-label">Key Size</div>
-            <div class="identity-value">897 bytes (vs 33 bytes for Bitcoin ECDSA)</div>
-        </div>
-        <div class="identity-row">
-            <div class="identity-label">Quantum Safe</div>
-            <div class="identity-value" style="color:#22c55e;">
-                ✓ Secure against Shor's algorithm
-            </div>
-        </div>
-    </div>
-
-    <!-- Address Search -->
-    <div class="section-title">
-        Search Address
-        <button class="refresh-btn" onclick="init()">↻ Refresh</button>
-    </div>
-    <input
-        type="text"
-        class="search-box"
-        id="searchInput"
-        placeholder="Enter a QTOP address to check balance..."
-        onkeypress="handleSearch(event)"
-    />
-    <div class="balance-result" id="balanceResult">
-        <div class="balance-amount" id="balanceAmount"></div>
-        <div class="balance-address" id="balanceAddress"></div>
-    </div>
-
-    <!-- Peers -->
-    <div class="section-title">Connected Peers</div>
-    <div class="peers-list" id="peersList">
-        <div class="loading">Loading peers...</div>
-    </div>
-
-    <!-- Blocks -->
-    <div class="section-title">Latest Blocks</div>
-    <div id="blockList">
-        <div class="loading">Loading blocks...</div>
-    </div>
-
+  </div>
+  <div class="nav-search">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" placeholder="Search by address or block height" id="search-input" onkeydown="if(event.key==='Enter')doSearch()"/>
+  </div>
+</nav>
+<div class="nav-tabs">
+  <div class="tab active" onclick="showTab('home',this)">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Overview
+  </div>
+  <div class="tab" onclick="showTab('blocks',this)">
+    <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Blocks
+  </div>
+  <div class="tab" onclick="showTab('address',this)">
+    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Address
+  </div>
+  <div class="tab" onclick="showTab('richlist',this)">
+    <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Rich List
+  </div>
+  <div class="tab" onclick="showTab('peers',this)">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Peers
+  </div>
 </div>
-
-<footer>
-    Qubit TopCoin (QTOP) · Cori Testnet · MIT License ·
-    github.com/Kstyle12/qubit-topcoin ·
-    For everyone. Forever.
-</footer>
-
+<div id="tab-home">
+  <div class="hero-bar">
+    <div class="stats-row">
+      <div class="stat"><div class="stat-l">Block height</div><div class="stat-v green" id="s-height">—</div></div>
+      <div class="stat"><div class="stat-l">Block reward</div><div class="stat-v green">50 QTOP</div></div>
+      <div class="stat"><div class="stat-l">Difficulty</div><div class="stat-v" id="s-diff">—</div></div>
+      <div class="stat"><div class="stat-l">Peers</div><div class="stat-v" id="s-peers">—</div></div>
+      <div class="stat"><div class="stat-l">Coins mined</div><div class="stat-v" id="s-mined">—</div></div>
+      <div class="stat"><div class="stat-l">Max supply</div><div class="stat-v">21,000,000</div></div>
+    </div>
+    <div class="network-status-box">
+      <div style="grid-column:span 4"><div class="ns-title"><span class="ns-dot"></span>Network Status — Cori Testnet</div></div>
+      <div><div class="ns-label">Node identity</div><div class="ns-value green" id="ns-identity" style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div></div>
+      <div>
+        <div class="ns-label">Coin supply mined</div>
+        <div class="ns-value" id="ns-supply">—</div>
+        <div class="supply-bar-wrap"><div class="supply-bar" id="ns-bar" style="width:0%"></div></div>
+        <div style="font-size:10px;color:#555;margin-top:4px" id="ns-pct">0% of 21,000,000 QTOP</div>
+      </div>
+      <div><div class="ns-label">Block index</div><div class="ns-value green" id="ns-blockindex">—</div><div style="font-size:10px;color:#555;margin-top:4px">Latest confirmed block</div></div>
+      <div><div class="ns-label">Next halving</div><div class="ns-value" id="ns-halving">—</div><div style="font-size:10px;color:#555;margin-top:4px">blocks remaining</div></div>
+    </div>
+  </div>
+  <div class="main">
+    <div>
+      <div class="section-header">
+        <div class="section-title">Latest Blocks</div>
+        <div class="view-more" onclick="showTab('blocks',document.querySelectorAll('.tab')[1])">View more <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+      </div>
+      <div id="blocks-list"><div style="color:#555;font-size:13px;padding:2rem;text-align:center">Start a local node on port 5003 to see live blocks</div></div>
+    </div>
+    <div>
+      <div class="section-header"><div class="section-title">Latest Transactions</div></div>
+      <div id="tx-list"><div style="color:#555;font-size:13px;padding:2rem;text-align:center">Transactions will appear here when blocks are mined</div></div>
+    </div>
+  </div>
+</div>
+<div id="tab-blocks" style="display:none;padding:1.5rem 2rem">
+  <div class="section-header"><div class="section-title">Block Index</div></div>
+  <div class="panel">
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr><th>Block</th><th>Transactions</th><th>Reward</th><th>Difficulty</th><th>Mined by</th></tr></thead>
+      <tbody id="blocks-table"><tr><td colspan="5" style="padding:2rem;text-align:center;color:#555">Connect a node to see block data</td></tr></tbody>
+    </table>
+  </div>
+</div>
+<div id="tab-address" style="display:none;padding:1.5rem 2rem">
+  <div class="section-title" style="margin-bottom:1.25rem">Address Lookup</div>
+  <div class="addr-panel">
+    <div class="addr-search">
+      <input type="text" id="addr-input" placeholder="Enter QTOP address..."/>
+      <button onclick="lookupAddr()">Look up</button>
+    </div>
+    <div id="addr-result"><div class="addr-placeholder">Enter a QTOP address above to check its balance</div></div>
+  </div>
+</div>
+<div id="tab-richlist" style="display:none;padding:1.5rem 2rem">
+  <div class="section-header"><div class="section-title">Rich List</div></div>
+  <div style="background:#222220;border:0.5px solid rgba(29,158,117,0.2);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1.25rem;font-size:13px;color:#888">
+    <span style="color:#1D9E75;font-weight:500">ⓘ Data information</span> — Rich list calculated from current chain state. Data based on block <span id="rl-block" style="color:#e8e6e0">—</span>
+  </div>
+  <div class="panel">
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr><th style="width:60px">Rank</th><th>Address</th><th>Balance (QTOP)</th><th>% of Supply</th></tr></thead>
+      <tbody id="richlist-table"><tr><td colspan="4" style="padding:2rem;text-align:center;color:#555">Connect a node to calculate rich list</td></tr></tbody>
+    </table>
+  </div>
+</div>
+<div id="tab-peers" style="display:none;padding:1.5rem 2rem">
+  <div class="section-header"><div class="section-title">Network Peers</div></div>
+  <div class="panel">
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr><th>Node</th><th>Address</th><th>Block #</th><th>Status</th></tr></thead>
+      <tbody id="peers-table"><tr><td colspan="4" style="padding:2rem;text-align:center;color:#555">Connect a node to see peer data</td></tr></tbody>
+    </table>
+  </div>
+</div>
+<div class="node-info">
+  <div class="node-dot"></div>
+  <span id="node-status">Connecting to local node on port 5003...</span>
+</div>
 <script>
-    const NODE = 'http://localhost:5003';
-    let fullPK  = '';
-    let pkShown = false;
-
-    function formatTime(ts) {
-        return new Date(ts * 1000).toLocaleString();
+var chainData=[];
+function showTab(name,el){
+  ['home','blocks','address','richlist','peers'].forEach(function(t){
+    var d=document.getElementById('tab-'+t);
+    if(d)d.style.display='none';
+  });
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
+  var target=document.getElementById('tab-'+name);
+  if(target)target.style.display='';
+  if(el)el.classList.add('active');
+}
+function timeAgo(ts){
+  if(!ts)return'';
+  var diff=Math.floor((Date.now()-ts*1000)/1000);
+  if(diff<60)return diff+'s ago';
+  if(diff<3600)return Math.floor(diff/60)+'m ago';
+  return Math.floor(diff/3600)+'h ago';
+}
+function trunc(s,n){if(!s)return'—';return s.length>n?s.slice(0,n)+'...':s;}
+function calcSupply(chain){
+  var total=0;
+  chain.forEach(function(b){
+    if(b.index>0){
+      var halvings=Math.floor(b.index/210000);
+      total+=50/Math.pow(2,halvings);
     }
-
-    function formatQTOP(cori) {
-        return (cori / 100_000_000).toFixed(8) + ' QTOP';
+  });
+  return Math.round(total*100000000)/100000000;
+}
+function buildRichList(chain){
+  var balances={};
+  chain.forEach(function(b){
+    if(b.transactions){
+      b.transactions.forEach(function(tx){
+        if(tx.sender&&tx.sender!=='0'&&tx.sender!=='COINBASE')balances[tx.sender]=(balances[tx.sender]||0)-(tx.amount||0);
+        if(tx.recipient)balances[tx.recipient]=(balances[tx.recipient]||0)+(tx.amount||0);
+      });
     }
-
-    function shortHash(hash) {
-        return hash.substring(0, 20) + '...' + hash.substring(hash.length - 8);
+    if(b.index>0){
+      var m=b.miner||b.miner_address;
+      if(m){var halvings=Math.floor((b.index||0)/210000);balances[m]=(balances[m]||0)+(5000000000/Math.pow(2,halvings));}
     }
-
-    function togglePK() {
-        pkShown = !pkShown;
-        document.getElementById('pkShort').style.display = pkShown ? 'none' : 'inline';
-        document.getElementById('pkFull').style.display  = pkShown ? 'inline' : 'none';
-    }
-
-    async function loadIdentity() {
-        try {
-            const res  = await fetch(`${NODE}/identity`);
-            const data = await res.json();
-
-            document.getElementById('nodeId').textContent = data.node_id;
-            fullPK = data.public_key;
-            document.getElementById('pkFull').textContent  = data.public_key;
-            document.getElementById('pkShort').textContent =
-                data.public_key.substring(0, 40) + '... (click to expand)';
-
-        } catch(e) {
-            document.getElementById('nodeId').textContent = 'Node offline';
-        }
-    }
-
-    async function loadStatus() {
-        try {
-            const res  = await fetch(`${NODE}/status`);
-            const data = await res.json();
-
-            document.getElementById('blockHeight').textContent = data.blocks;
-            document.getElementById('pendingTxs').textContent  = data.pending_txs;
-            document.getElementById('difficulty').textContent  = data.difficulty;
-            document.getElementById('peerCount').textContent   = data.peers.length;
-            document.getElementById('statusDot').className     = 'status-dot';
-            document.getElementById('statusText').textContent  = 'Node Online';
-
-            const peersList = document.getElementById('peersList');
-            if (data.peers.length === 0) {
-                peersList.innerHTML =
-                    '<div class="peer-item">No peers connected</div>';
-            } else {
-                peersList.innerHTML = data.peers.map(p =>
-                    `<div class="peer-item">
-                        <div class="status-dot"></div>
-                        ${p}
-                    </div>`
-                ).join('');
-            }
-
-        } catch(e) {
-            document.getElementById('statusDot').className    = 'status-dot offline';
-            document.getElementById('statusText').textContent = 'Node Offline';
-        }
-    }
-
-    async function loadChain() {
-        try {
-            const res    = await fetch(`${NODE}/chain`);
-            const blocks = await res.json();
-            const list   = document.getElementById('blockList');
-
-            if (!blocks || blocks.length === 0) {
-                list.innerHTML =
-                    '<div class="empty-state">No blocks found</div>';
-                return;
-            }
-
-            const reversed = [...blocks].reverse();
-
-            list.innerHTML = reversed.map(block => `
-                <div class="block-card" onclick="toggleBlock(this)">
-                    <div class="block-header">
-                        <div class="block-number">Block #${block.index}</div>
-                        <div class="block-time">${formatTime(block.timestamp)}</div>
-                    </div>
-                    <div class="block-hash">
-                        <span style="color:#475569">Hash: </span>${block.hash}
-                    </div>
-                    <div class="block-hash">
-                        <span style="color:#475569">Prev: </span>
-                        ${block.previous_hash}
-                    </div>
-                    <div class="block-meta">
-                        <div>Txs: <span>
-                            ${block.transactions ? block.transactions.length : 0}
-                        </span></div>
-                        <div>Nonce: <span>${block.nonce}</span></div>
-                        <div>Algorithm: <span>RandomX</span></div>
-                    </div>
-                    <div class="tx-list">
-                        ${renderTransactions(block.transactions)}
-                    </div>
-                </div>
-            `).join('');
-
-        } catch(e) {
-            document.getElementById('blockList').innerHTML =
-                '<div class="empty-state">Could not load blocks. ' +
-                'Is your node running?</div>';
-        }
-    }
-
-    function renderTransactions(txs) {
-        if (!txs || txs.length === 0) {
-            return '<div class="empty-state">No transactions</div>';
-        }
-
-        return txs.map(tx => {
-            const d        = tx.data || tx;
-            const isReward = d.sender === 'NETWORK' || d.sender === 'GENESIS';
-            return `
-                <div class="tx-card">
-                    <div class="tx-row">
-                        <span class="tx-label">From</span>
-                        <span class="tx-value">
-                            ${isReward ? '⛏ MINING REWARD' : d.sender}
-                        </span>
-                    </div>
-                    <div class="tx-row">
-                        <span class="tx-label">To</span>
-                        <span class="tx-value">${d.recipient}</span>
-                    </div>
-                    <div class="tx-row">
-                        <span class="tx-label">Amount</span>
-                        <span class="tx-value tx-amount">
-                            ${formatQTOP(d.amount)}
-                        </span>
-                    </div>
-                    ${!isReward ? `
-                    <div class="tx-row">
-                        <span class="tx-label">Fee</span>
-                        <span class="tx-value tx-fee">${formatQTOP(d.fee)}</span>
-                    </div>` : ''}
-                    <div class="tx-row">
-                        <span class="tx-label">Tx Hash</span>
-                        <span class="tx-value">
-                            ${tx.hash ? shortHash(tx.hash) : 'N/A'}
-                        </span>
-                    </div>
-                    <div class="tx-row">
-                        <span class="tx-label">Signature</span>
-                        <span class="tx-value" style="color:#7c3aed">
-                            FALCON-512 ✓
-                        </span>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    }
-
-    function toggleBlock(el) {
-        el.classList.toggle('expanded');
-    }
-
-    async function handleSearch(event) {
-        if (event.key !== 'Enter') return;
-        const address = document.getElementById('searchInput').value.trim();
-        if (!address) return;
-
-        try {
-            const res  = await fetch(`${NODE}/balance/${address}`);
-            const data = await res.json();
-
-            document.getElementById('balanceAmount').textContent =
-                formatQTOP(data.balance);
-            document.getElementById('balanceAddress').textContent = address;
-            document.getElementById('balanceResult').style.display = 'block';
-        } catch(e) {
-            alert('Could not fetch balance. Is your node running?');
-        }
-    }
-
-    async function init() {
-        await loadStatus();
-        await loadIdentity();
-        await loadChain();
-    }
-
-    init();
-    setInterval(init, 10000);
+  });
+  return Object.entries(balances).filter(function(e){return e[1]>0&&e[0]&&e[0]!=='0';}).sort(function(a,b){return b[1]-a[1];});
+}
+function renderBlocks(chain){
+  var recent=chain.slice(-5).reverse();
+  document.getElementById('blocks-list').innerHTML=recent.map(function(b){
+    return '<div class="block-card"><div class="block-card-header"><div style="display:flex;align-items:center;gap:10px"><div class="block-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/></svg></div><div><div class="block-num-label">Block</div><div class="block-num">'+(b.index||0)+'</div></div></div><div class="block-timestamp">'+(b.timestamp?timeAgo(b.timestamp):'')+'</div></div><div class="block-meta-grid"><div><div class="bml">Transactions</div><div class="bmv">'+(b.transactions?b.transactions.length:0)+'</div></div><div><div class="bml">Reward</div><div class="bmv" style="color:#1D9E75">50 QTOP</div></div><div><div class="bml">Difficulty</div><div class="bmv">'+(b.difficulty||'—')+'</div></div></div><div class="mined-by"><div class="mined-label">Mined by</div><div class="mined-addr">'+(b.miner||b.miner_address||'Unknown')+'</div></div></div>';
+  }).join('')||'<div style="color:#555;font-size:13px;padding:2rem;text-align:center">No blocks yet</div>';
+  document.getElementById('blocks-table').innerHTML=chain.slice().reverse().map(function(b){
+    return '<tr><td style="font-family:monospace;color:#1D9E75">#'+(b.index||0)+'</td><td>'+(b.transactions?b.transactions.length:0)+'</td><td style="color:#1D9E75;font-family:monospace">50 QTOP</td><td style="font-family:monospace">'+(b.difficulty||'—')+'</td><td style="font-family:monospace;font-size:11px;color:#888">'+trunc(b.miner||b.miner_address||'Unknown',32)+'</td></tr>';
+  }).join('')||'<tr><td colspan="5" style="padding:2rem;text-align:center;color:#555">No blocks yet</td></tr>';
+  var txHtml='';
+  chain.slice(-10).reverse().forEach(function(b){
+    if(b.transactions){b.transactions.forEach(function(tx){
+      if(tx.sender==='0'||tx.sender==='COINBASE'||!tx.sender)return;
+      txHtml+='<div class="tx-card"><div class="tx-card-header"><div style="display:flex;align-items:center;gap:8px"><div class="tx-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></div><div><div class="tx-title">Transfer | Block '+b.index+'</div><div class="tx-time">'+(b.timestamp?timeAgo(b.timestamp):'')+'</div></div></div><span class="status-pill status-confirmed">Confirmed</span></div><div class="tx-hash">'+trunc(tx.transaction_id||tx.id||'',48)+'</div><div style="display:flex;justify-content:space-between;align-items:center"><div style="display:flex;align-items:center;gap:6px;font-size:11px"><span class="tx-addr">'+trunc(tx.sender,14)+'</span><span style="color:#555">→</span><span class="tx-addr">'+trunc(tx.recipient,14)+'</span></div><div class="tx-amount">'+((tx.amount||0)/100000000).toFixed(8)+' QTOP</div></div></div>';
+    });}
+  });
+  document.getElementById('tx-list').innerHTML=txHtml||'<div style="color:#555;font-size:13px;padding:2rem;text-align:center">No user transactions yet</div>';
+  var richlist=buildRichList(chain);
+  document.getElementById('rl-block').textContent=chain.length>0?chain[chain.length-1].index:'—';
+  document.getElementById('richlist-table').innerHTML=richlist.length>0?richlist.slice(0,50).map(function(e,i){
+    var qtop=(e[1]/100000000).toFixed(8);
+    var pct=((e[1]/100000000)/21000000*100).toFixed(4);
+    return '<tr><td style="font-weight:500;color:#e8e6e0">'+(i+1)+'</td><td style="font-family:monospace;font-size:11px;color:#1D9E75">'+e[0]+'</td><td style="font-family:monospace;font-weight:500">'+parseFloat(qtop).toLocaleString(undefined,{minimumFractionDigits:8})+'</td><td style="color:#888">'+pct+'%</td></tr>';
+  }).join(''):'<tr><td colspan="4" style="padding:2rem;text-align:center;color:#555">No wallet data yet — mine some blocks first</td></tr>';
+  var mined=calcSupply(chain);
+  var pct=Math.min((mined/21000000*100),100);
+  document.getElementById('s-mined').textContent=mined.toLocaleString(undefined,{maximumFractionDigits:2});
+  document.getElementById('ns-supply').textContent=mined.toLocaleString(undefined,{maximumFractionDigits:4})+' QTOP';
+  document.getElementById('ns-bar').style.width=pct.toFixed(4)+'%';
+  document.getElementById('ns-pct').textContent=pct.toFixed(6)+'% of 21,000,000 QTOP';
+  var lastBlock=chain.length>0?chain[chain.length-1].index:0;
+  document.getElementById('ns-blockindex').textContent='#'+lastBlock;
+  document.getElementById('s-height').textContent=lastBlock.toLocaleString();
+  var nextHalving=Math.ceil((lastBlock+1)/210000)*210000;
+  document.getElementById('ns-halving').textContent=(nextHalving-lastBlock).toLocaleString()+' blocks';
+}
+async function fetchNode(){
+  try{
+    var sr=await fetch('http://localhost:5003/status');
+    if(!sr.ok)throw new Error();
+    var s=await sr.json();
+    document.getElementById('node-status').textContent='Connected to local node — refreshing every 10s';
+    if(s.difficulty!==undefined)document.getElementById('s-diff').textContent=s.difficulty;
+    if(s.peers!==undefined)document.getElementById('s-peers').textContent=s.peers;
+    try{var ir=await fetch('http://localhost:5003/identity');if(ir.ok){var id=await ir.json();document.getElementById('ns-identity').textContent=id.node_id||id.public_key||'—';}}catch(e){}
+    var cr=await fetch('http://localhost:5003/chain');
+    if(!cr.ok)throw new Error();
+    var cd=await cr.json();
+    chainData=cd.chain||[];
+    renderBlocks(chainData);
+    try{
+      var pr=await fetch('http://localhost:5003/peers');
+      if(pr.ok){var pd=await pr.json();var peers=pd.peers||[];
+        document.getElementById('peers-table').innerHTML=peers.length>0?peers.map(function(p,i){
+          return '<tr><td style="font-family:monospace;color:#888">node-'+String(i+1).padStart(3,'0')+'</td><td style="font-family:monospace;font-size:11px;color:#1D9E75">'+p+'</td><td style="font-family:monospace">'+(s.chain_length||'—')+'</td><td><span class="status-pill status-confirmed">Active</span></td></tr>';
+        }).join(''):'<tr><td colspan="4" style="padding:1.5rem;text-align:center;color:#555">No peers connected yet</td></tr>';
+      }
+    }catch(e){}
+  }catch(e){
+    document.getElementById('node-status').textContent='Not connected — start a node on localhost:5003 to see live data';
+  }
+}
+async function lookupAddr(){
+  var addr=document.getElementById('addr-input').value.trim();
+  if(!addr)return;
+  var el=document.getElementById('addr-result');
+  el.innerHTML='<div class="addr-placeholder">Looking up...</div>';
+  try{
+    var r=await fetch('http://localhost:5003/balance/'+addr);
+    if(!r.ok)throw new Error();
+    var d=await r.json();
+    var qtop=((d.balance_cori||0)/100000000).toFixed(8);
+    var richlist=buildRichList(chainData);
+    var rank=richlist.findIndex(function(e){return e[0]===addr;})+1;
+    el.innerHTML='<div class="addr-result-grid"><div class="addr-stat"><div class="addr-stat-l">Balance (QTOP)</div><div class="addr-stat-v">'+parseFloat(qtop).toLocaleString(undefined,{minimumFractionDigits:8})+'</div></div><div class="addr-stat"><div class="addr-stat-l">Balance (cori)</div><div class="addr-stat-v" style="font-size:15px;color:#e8e6e0">'+(d.balance_cori||0).toLocaleString()+'</div></div><div class="addr-stat"><div class="addr-stat-l">Rich list rank</div><div class="addr-stat-v" style="color:#EF9F27">'+(rank>0?'#'+rank:'Unranked')+'</div></div></div><div style="margin-top:1rem;padding:1rem;background:#1a1a18;border-radius:8px;font-family:monospace;font-size:11px;color:#888;word-break:break-all">'+addr+'</div>';
+  }catch(e){
+    el.innerHTML='<div class="addr-placeholder">Could not look up address — make sure your node is running on port 5003</div>';
+  }
+}
+function doSearch(){
+  var v=document.getElementById('search-input').value.trim();
+  if(!v)return;
+  if(!isNaN(v)){showTab('blocks',document.querySelectorAll('.tab')[1]);}
+  else{document.getElementById('addr-input').value=v;showTab('address',document.querySelectorAll('.tab')[2]);lookupAddr();}
+}
+fetchNode();
+setInterval(fetchNode,10000);
 </script>
-
 </body>
 </html>
