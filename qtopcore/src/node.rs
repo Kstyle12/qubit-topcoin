@@ -75,11 +75,7 @@ async fn get_chain(state: web::Data<Mutex<NodeState>>) -> HttpResponse {
 async fn mine(state: web::Data<Mutex<NodeState>>) -> HttpResponse {
     let mut node = state.lock().unwrap();
 
-    if node.chain.mempool.is_empty() {
-        return HttpResponse::Ok().json(
-            serde_json::json!({"message": "No pending transactions"})
-        );
-    }
+    // Mine even if mempool is empty — miner still gets block reward
 
     let miner_address = node.miner_address.clone();
     let temp_wallet   = Wallet::new();

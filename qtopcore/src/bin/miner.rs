@@ -162,17 +162,15 @@ fn main() {
 
                 if pending == 0 {
                     println!(
-                        "[{}] Waiting for transactions... (height: {})",
+                        "[{}] No pending transactions — mining empty block (height: {})",
                         timestamp(), height
                     );
-                    thread::sleep(Duration::from_secs(POLL_INTERVAL));
-                    continue;
+                } else {
+                    println!(
+                        "[{}] {} pending transaction(s) found. Mining...",
+                        timestamp(), pending
+                    );
                 }
-
-                println!(
-                    "[{}] {} pending transaction(s) found. Mining...",
-                    timestamp(), pending
-                );
 
                 // Mine the block
                 let mine_start = Instant::now();
