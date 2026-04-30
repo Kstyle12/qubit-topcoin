@@ -288,7 +288,7 @@ async function fetchNode(){
     var s=await sr.json();
     document.getElementById('node-status').textContent='Connected to local node — refreshing every 10s';
     if(s.difficulty!==undefined)document.getElementById('s-diff').textContent=s.difficulty;
-    if(s.peers!==undefined)document.getElementById('s-peers').textContent=s.peers;
+    if(s.peers!==undefined)document.getElementById('s-peers').textContent=(s.peers||[]).length;
     try{var ir=await fetch('http://localhost:5003/identity');if(ir.ok){var id=await ir.json();document.getElementById('ns-identity').textContent=id.node_id||id.public_key||'—';}}catch(e){}
     var cr=await fetch('http://localhost:5003/chain');
     if(!cr.ok)throw new Error();
