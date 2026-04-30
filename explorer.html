@@ -318,6 +318,30 @@ async function fetchNode(){
     document.getElementById('node-status').textContent='Not connected — start a node on localhost:5003 to see live data';
   }
 }
+
+async function lookupAddr(){
+  var addr=document.getElementById('addr-input').value.trim();
+  if(!addr)return;
+  var el=document.getElementById('addr-result');
+  el.innerHTML='<div class="addr-placeholder">Looking up...</div>';
+  try{
+    var r=await fetch('http://localhost:5003/balance/'+addr);
+    if(!r.ok)throw new Error();
+    var d=await r.json();
+    var qtop=d.qtop?(d.qtop).toFixed(8):((d.balance||0)/100000000).toFixed(8);
+    var richlist=buildRichList(chainData);
+    var rank=richlist.findIndex(function(e){return e[0]===addr;})+1;
+    el.innerHTML='<div class="addr-result-grid">'+
+      '<div class="addr-stat"><div class="addr-stat-l">Balance (QTOP)</div><div class="addr-stat-v">'+parseFloat(qtop).toLocaleString(undefined,{minimumFractionDigits:8})+'</div></div>'+
+      '<div class="addr-stat"><div class="addr-stat-l">Balance (cori)</div><div class="addr-stat-v" style="font-size:15px;color:#e8e6e0">'+(d.balance||0).toLocaleString()+'</div></div>'+
+      '<div class="addr-stat"><div class="addr-stat-l">Rich list rank</div><div class="addr-stat-v" style="color:#EF9F27">'+(rank>0?'#'+rank:'Unranked')+'</div></div>'+
+    '</div>'+
+    '<div style="margin-top:1rem;padding:1rem;background:#1a1a18;border-radius:8px;font-family:monospace;font-size:11px;color:#888;word-break:break-all">'+addr+'</div>';
+  }catch(e){
+    el.innerHTML='<div class="addr-placeholder">Could not look up address — make sure your node is running on port 5003</div>';
+  }
+}
+
 fetchNode();
 setInterval(fetchNode,10000);
 </script>
