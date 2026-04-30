@@ -248,9 +248,6 @@ function buildRichList(chain){
   });
   return Object.entries(balances).filter(function(e){return e[1]>0&&e[0]&&e[0]!=="0";}).sort(function(a,b){return b[1]-a[1];});
 }
-  });
-  return Object.entries(balances).filter(function(e){return e[1]>0&&e[0]&&e[0]!=='0';}).sort(function(a,b){return b[1]-a[1];});
-}
 
 function renderBlocks(chain){
   var recent=chain.slice(-5).reverse();
