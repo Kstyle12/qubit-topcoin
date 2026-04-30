@@ -178,12 +178,10 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 <div id="tab-richlist" style="display:none;padding:1.5rem 2rem">
   <div class="section-header"><div class="section-title">Rich List</div></div>
   <div style="background:#222220;border:0.5px solid rgba(29,158,117,0.2);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1.25rem;font-size:13px;color:#888">
-    <span style="color:#1D9E75;font-weight:500">ⓘ Data information</span> — Rich list calculated from current chain state. Data based on block <span id="rl-block" style="color:#e8e6e0">—</span>
   </div>
   <div class="panel">
     <table style="width:100%;border-collapse:collapse">
       <thead><tr><th style="width:60px">Rank</th><th>Address</th><th>Balance (QTOP)</th><th>% of Supply</th></tr></thead>
-      <tbody id="richlist-table"><tr><td colspan="4" style="padding:2rem;text-align:center;color:#555">Connect a node to calculate rich list</td></tr></tbody>
     </table>
   </div>
 </div>
@@ -272,10 +270,6 @@ function renderBlocks(chain){
   });
   document.getElementById('tx-list').innerHTML=txHtml||'<div style="color:#555;font-size:13px;padding:2rem;text-align:center">No user transactions yet</div>';
   var richlist=buildRichList(chain);
-  document.getElementById('rl-block').textContent=chain.length>0?chain[chain.length-1].index:'—';
-  document.getElementById('richlist-table').innerHTML=richlist.length>0?richlist.slice(0,50).map(function(e,i){
-    var qtop=(e[1]/100000000).toFixed(8);
-    var pct=((e[1]/100000000)/21000000*100).toFixed(4);
     return '<tr><td style="font-weight:500;color:#e8e6e0">'+(i+1)+'</td><td style="font-family:monospace;font-size:11px;color:#1D9E75">'+e[0]+'</td><td style="font-family:monospace;font-weight:500">'+parseFloat(qtop).toLocaleString(undefined,{minimumFractionDigits:8})+'</td><td style="color:#888">'+pct+'%</td></tr>';
   }).join(''):'<tr><td colspan="4" style="padding:2rem;text-align:center;color:#555">No wallet data yet — mine some blocks first</td></tr>';
   var mined=calcSupply(chain);
@@ -327,13 +321,10 @@ async function loadRichList(){
     var r=await fetch('http://localhost:5003/balances');
     if(!r.ok)throw new Error();
     var data=await r.json();
-    document.getElementById('rl-block').textContent=chainData.length>0?chainData[0].index:'—';
-    document.getElementById('richlist-table').innerHTML=data.length>0?data.slice(0,50).map(function(e,i){
       var pct=((e.balance/100000000)/21000000*100).toFixed(4);
       return '<tr><td style="font-weight:500;color:#e8e6e0">'+(i+1)+'</td><td style="font-family:monospace;font-size:11px;color:#1D9E75">'+e.address+'</td><td style="font-family:monospace;font-weight:500">'+parseFloat(e.qtop).toFixed(8)+'</td><td style="color:#888">'+pct+'%</td></tr>';
     }).join(''):'<tr><td colspan="4" style="padding:2rem;text-align:center;color:#555">No data yet</td></tr>';
   }catch(e){
-    document.getElementById('richlist-table').innerHTML='<tr><td colspan="4" style="padding:2rem;text-align:center;color:#555">Could not load — make sure node is running</td></tr>';
   }
 }
 
