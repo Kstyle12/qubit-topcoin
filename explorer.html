@@ -203,6 +203,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 <script>
 var chainData=[];
 function showTab(name,el){
+  if(name==='richlist')loadRichList();
   ['home','blocks','address','richlist','peers'].forEach(function(t){
     var d=document.getElementById('tab-'+t);
     if(d)d.style.display='none';
@@ -317,6 +318,22 @@ async function fetchNode(){
     }catch(e){}
   }catch(e){
     document.getElementById('node-status').textContent='Not connected — start a node on localhost:5003 to see live data';
+  }
+}
+
+
+async function loadRichList(){
+  try{
+    var r=await fetch('http://localhost:5003/balances');
+    if(!r.ok)throw new Error();
+    var data=await r.json();
+    document.getElementById('rl-block').textContent=chainData.length>0?chainData[0].index:'—';
+    document.getElementById('richlist-table').innerHTML=data.length>0?data.slice(0,50).map(function(e,i){
+      var pct=((e.balance/100000000)/21000000*100).toFixed(4);
+      return '<tr><td style="font-weight:500;color:#e8e6e0">'+(i+1)+'</td><td style="font-family:monospace;font-size:11px;color:#1D9E75">'+e.address+'</td><td style="font-family:monospace;font-weight:500">'+parseFloat(e.qtop).toFixed(8)+'</td><td style="color:#888">'+pct+'%</td></tr>';
+    }).join(''):'<tr><td colspan="4" style="padding:2rem;text-align:center;color:#555">No data yet</td></tr>';
+  }catch(e){
+    document.getElementById('richlist-table').innerHTML='<tr><td colspan="4" style="padding:2rem;text-align:center;color:#555">Could not load — make sure node is running</td></tr>';
   }
 }
 
