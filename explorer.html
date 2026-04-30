@@ -315,7 +315,6 @@ async function fetchNode(){
   }catch(e){
     document.getElementById('node-status').textContent='Not connected — start a node on localhost:5003 to see live data';
   }
-//ENDOFFUNCTION
 }
 fetchNode();
 setInterval(fetchNode,10000);
