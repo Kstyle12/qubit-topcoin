@@ -246,6 +246,29 @@ async fn get_identity(state: web::Data<Mutex<NodeState>>) -> HttpResponse {
     }))
 }
 
+
+async fn get_recent_blocks(state: web::Data<Mutex<NodeState>>) -> HttpResponse {
+    let node = state.lock().unwrap();
+    let chain = &node.chain.chain;
+    let recent: Vec<serde_json::Value> = chain.iter().rev().take(20).map(|b| {
+        serde_json::json!({
+            "index": b.index,
+            "timestamp": b.timestamp,
+            "nonce": b.nonce,
+            "hash": b.hash,
+            "previous_hash": b.previous_hash,
+            "difficulty": node.chain.difficulty,
+            "transactions": b.transactions.iter().map(|tx| {
+                serde_json::json!({
+                    "data": tx.data,
+                    "hash": tx.hash
+                })
+            }).collect::<Vec<_>>()
+        })
+    }).collect();
+    HttpResponse::Ok().json(recent)
+}
+
 pub async fn start_node(port: u16, miner_addr: Option<String>) -> std::io::Result<()> {
     println!("=========================================");
     println!("  QTOP NODE STARTING ON PORT {}", port);
@@ -295,6 +318,7 @@ pub async fn start_node(port: u16, miner_addr: Option<String>) -> std::io::Resul
             .app_data(state.clone())
             .route("/status",            web::get().to(get_status))
             .route("/chain",             web::get().to(get_chain))
+            .route("/blocks/recent",     web::get().to(get_recent_blocks))
             .route("/mine",              web::get().to(mine))
             .route("/set_miner/{address}", web::post().to(set_miner_address))
             .route("/identity",          web::get().to(get_identity))

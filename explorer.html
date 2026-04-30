@@ -306,7 +306,7 @@ async function fetchNode(){
     var nextHalving=Math.ceil((s.blocks||1)/210000)*210000;
     document.getElementById('ns-halving').textContent=(nextHalving-(s.blocks||0)).toLocaleString()+' blocks';
 
-    var cr=await fetch('http://localhost:5003/chain');
+    var cr=await fetch('http://localhost:5003/blocks/recent');
     if(!cr.ok)throw new Error();
     var cd=await cr.json();
     chainData=Array.isArray(cd)?cd:(cd.chain||[]);
