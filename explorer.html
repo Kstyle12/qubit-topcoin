@@ -287,13 +287,10 @@ async function fetchNode(){
     if(!sr.ok)throw new Error();
     var s=await sr.json();
     document.getElementById('node-status').textContent='Connected to local node — refreshing every 10s';
-    document.getElementById('ex-height').textContent=s.blocks||'—';
-    document.getElementById('s-height').textContent=s.blocks||'—';
+        document.getElementById('s-height').textContent=s.blocks||'—';
     document.getElementById('s-diff').textContent=s.difficulty||'—';
     document.getElementById('s-peers').textContent=Array.isArray(s.peers)?s.peers.length:0;
-    document.getElementById('ex-diff').textContent=s.difficulty||'—';
-    document.getElementById('ex-peers').textContent=Array.isArray(s.peers)?s.peers.length:0;
-    document.getElementById('ns-identity').textContent=s.node_id||'—';
+            document.getElementById('ns-identity').textContent=s.node_id||'—';
     document.getElementById('ns-blockindex').textContent='#'+((s.blocks||1)-1);
     var nextHalving=Math.ceil((s.blocks||1)/210000)*210000;
     document.getElementById('ns-halving').textContent=(nextHalving-(s.blocks||0)).toLocaleString()+' blocks';
