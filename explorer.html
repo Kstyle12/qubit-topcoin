@@ -269,9 +269,6 @@ function renderBlocks(chain){
     });}
   });
   document.getElementById('tx-list').innerHTML=txHtml||'<div style="color:#555;font-size:13px;padding:2rem;text-align:center">No user transactions yet</div>';
-  var richlist=buildRichList(chain);
-    return '<tr><td style="font-weight:500;color:#e8e6e0">'+(i+1)+'</td><td style="font-family:monospace;font-size:11px;color:#1D9E75">'+e[0]+'</td><td style="font-family:monospace;font-weight:500">'+parseFloat(qtop).toLocaleString(undefined,{minimumFractionDigits:8})+'</td><td style="color:#888">'+pct+'%</td></tr>';
-  }).join(''):'<tr><td colspan="4" style="padding:2rem;text-align:center;color:#555">No wallet data yet — mine some blocks first</td></tr>';
   var mined=calcSupply(chain);
   var pct=Math.min((mined/21000000*100),100);
   document.getElementById('s-mined').textContent=mined.toLocaleString(undefined,{maximumFractionDigits:2});
