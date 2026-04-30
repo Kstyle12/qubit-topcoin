@@ -250,7 +250,7 @@ function buildRichList(chain){
 }
 
 function renderBlocks(chain){
-  var recent=chain.slice(-5).reverse();
+  var recent=chain.slice(0,5);
   document.getElementById('blocks-list').innerHTML=recent.map(function(b){
     var miner='Unknown';
     if(b.transactions&&b.transactions.length>0){
@@ -259,7 +259,7 @@ function renderBlocks(chain){
     }
     return '<div class="block-card"><div class="block-card-header"><div style="display:flex;align-items:center;gap:10px"><div class="block-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/></svg></div><div><div class="block-num-label">Block</div><div class="block-num">'+(b.index||0)+'</div></div></div><div class="block-timestamp">'+(b.timestamp?timeAgo(b.timestamp):'')+'</div></div><div class="block-meta-grid"><div><div class="bml">Transactions</div><div class="bmv">'+(b.transactions?b.transactions.length:0)+'</div></div><div><div class="bml">Reward</div><div class="bmv" style="color:#1D9E75">50 QTOP</div></div><div><div class="bml">Nonce</div><div class="bmv">'+(b.nonce||'—')+'</div></div></div><div class="mined-by"><div class="mined-label">Mined by</div><div class="mined-addr">'+miner+'</div></div></div>';
   }).join('')||'<div style="color:#555;font-size:13px;padding:2rem;text-align:center">No blocks yet</div>';
-  document.getElementById('blocks-table').innerHTML=chain.slice().reverse().map(function(b){
+  document.getElementById('blocks-table').innerHTML=chain.map(function(b){
     return (function(){var m='Unknown';if(b.transactions&&b.transactions[0]&&b.transactions[0].data&&b.transactions[0].data.sender==='NETWORK')m=b.transactions[0].data.recipient||'Unknown';return '<tr><td style="font-family:monospace;color:#1D9E75">#'+(b.index||0)+'</td><td>'+(b.transactions?b.transactions.length:0)+'</td><td style="color:#1D9E75;font-family:monospace">50 QTOP</td><td style="font-family:monospace">'+(b.nonce||'—')+'</td><td style="font-family:monospace;font-size:11px;color:#888">'+trunc(m,32)+'</td></tr>';})();
   }).join('')||'<tr><td colspan="5" style="padding:2rem;text-align:center;color:#555">No blocks yet</td></tr>';
   var txHtml='';
