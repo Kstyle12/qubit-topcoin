@@ -235,13 +235,14 @@ function buildRichList(chain){
   chain.forEach(function(b){
     if(b.transactions){
       b.transactions.forEach(function(tx){
-        if(tx.sender&&tx.sender!=='0'&&tx.sender!=='COINBASE')balances[tx.sender]=(balances[tx.sender]||0)-(tx.amount||0);
-        if(tx.recipient)balances[tx.recipient]=(balances[tx.recipient]||0)+(tx.amount||0);
+        var sender=tx.data?tx.data.sender:tx.sender;
+        var recipient=tx.data?tx.data.recipient:tx.recipient;
+        var amount=tx.data?tx.data.amount:tx.amount;
+        if(sender&&sender!=='0'&&sender!=='NETWORK'&&sender!=='COINBASE')
+          balances[sender]=(balances[sender]||0)-(amount||0);
+        if(recipient)
+          balances[recipient]=(balances[recipient]||0)+(amount||0);
       });
-    }
-    if(b.index>0){
-      var m=b.miner||b.miner_address;
-      if(m){var halvings=Math.floor((b.index||0)/210000);balances[m]=(balances[m]||0)+(5000000000/Math.pow(2,halvings));}
     }
   });
   return Object.entries(balances).filter(function(e){return e[1]>0&&e[0]&&e[0]!=='0';}).sort(function(a,b){return b[1]-a[1];});
@@ -307,12 +308,10 @@ async function fetchNode(){
     renderBlocks(chainData);
 
     try{
-      var pr=await fetch('http://localhost:5003/peers');
-      if(pr.ok){var pd=await pr.json();var peers=pd.peers||[];
-        document.getElementById('peers-table').innerHTML=peers.length>0?peers.map(function(p,i){
-          return '<tr><td style="font-family:monospace;color:#888">node-'+String(i+1).padStart(3,'0')+'</td><td style="font-family:monospace;font-size:11px;color:#1D9E75">'+p+'</td><td style="font-family:monospace">'+(s.blocks||'—')+'</td><td><span class="status-pill status-confirmed">Active</span></td></tr>';
-        }).join(''):'<tr><td colspan="4" style="padding:1.5rem;text-align:center;color:#555">No peers connected yet</td></tr>';
-      }
+      var peers=Array.isArray(s.peers)?s.peers:[];
+      document.getElementById('peers-table').innerHTML=peers.length>0?peers.map(function(p,i){
+        return '<tr><td style="font-family:monospace;color:#888">node-'+String(i+1).padStart(3,'0')+'</td><td style="font-family:monospace;font-size:11px;color:#1D9E75">'+p+'</td><td style="font-family:monospace">'+(s.blocks||'—')+'</td><td><span class="status-pill status-confirmed">Active</span></td></tr>';
+      }).join(''):'<tr><td colspan="4" style="padding:1.5rem;text-align:center;color:#555">No peers connected yet — waiting for Oracle node</td></tr>';
     }catch(e){}
   }catch(e){
     document.getElementById('node-status').textContent='Not connected — start a node on localhost:5003 to see live data';
