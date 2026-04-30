@@ -235,18 +235,20 @@ function buildRichList(chain){
   chain.forEach(function(b){
     if(b.transactions){
       b.transactions.forEach(function(tx){
-        var sender=tx.data?tx.data.sender:tx.sender;
-        var recipient=tx.data?tx.data.recipient:tx.recipient;
-        var amount=tx.data?tx.data.amount:tx.amount;
+        var d=tx.data||tx;
+        var sender=d.sender;
+        var recipient=d.recipient;
+        var amount=d.amount||0;
         if(sender&&sender!=='0'&&sender!=='NETWORK'&&sender!=='COINBASE')
-          balances[sender]=(balances[sender]||0)-(amount||0);
+          balances[sender]=(balances[sender]||0)-amount;
         if(recipient)
-          balances[recipient]=(balances[recipient]||0)+(amount||0);
+          balances[recipient]=(balances[recipient]||0)+amount;
       });
     }
   });
   return Object.entries(balances).filter(function(e){return e[1]>0&&e[0]&&e[0]!=='0';}).sort(function(a,b){return b[1]-a[1];});
 }
+
 function renderBlocks(chain){
   var recent=chain.slice(-5).reverse();
   document.getElementById('blocks-list').innerHTML=recent.map(function(b){
