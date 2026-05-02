@@ -364,13 +364,13 @@ footer{padding:2rem 1.25rem}}
 <script>
 async function fetchNode(){
   try{
-    const s=await fetch('http://35.239.68.97:5003/status');
+    const s=await fetch('https://qtop-testnet.duckdns.org/status');
     if(!s.ok)return;
     const d=await s.json();
     if(d.chain_length!==undefined)document.getElementById('ex-height').textContent=d.chain_length.toLocaleString();
     if(d.difficulty!==undefined)document.getElementById('ex-diff').textContent=d.difficulty;
     if(d.peers!==undefined)document.getElementById('ex-peers').textContent=d.peers;
-    const c=await fetch('http://35.239.68.97:5003/chain');
+    const c=await fetch('https://qtop-testnet.duckdns.org/chain');
     if(!c.ok)return;
     const cd=await c.json();
     const chain=cd.chain||[];
@@ -386,7 +386,7 @@ async function lookup(){
   const el=document.getElementById('addr-out');
   el.textContent='Looking up...';
   try{
-    const r=await fetch(`http://35.239.68.97:5003/balance/${addr}`);
+    const r=await fetch(`https://qtop-testnet.duckdns.org/balance/${addr}`);
     if(!r.ok){el.textContent='Could not reach node. Start a local node on port 5003.';return;}
     const d=await r.json();
     const q=(d.balance_cori/100000000).toFixed(8);
