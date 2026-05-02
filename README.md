@@ -30,7 +30,7 @@ cd qtopcore
 cargo run --bin qtopwallet -- create
 
 # Start a node (rewards paid to your wallet address)
-cargo run --bin qtopcore -- 5003 YOUR_QTOP_ADDRESS
+cargo run --bin qtopcore -- 5003 YOUR_ADDRESS https://qtop-testnet.duckdns.org
 
 # Start mining
 cargo run --bin miner -- YOUR_QTOP_ADDRESS
