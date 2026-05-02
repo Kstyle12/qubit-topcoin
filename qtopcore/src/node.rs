@@ -347,6 +347,22 @@ pub async fn start_node(port: u16, miner_addr: Option<String>) -> std::io::Resul
         identity,
     }));
 
+
+    // Auto-sync loop — syncs with peers every 30 seconds
+    let sync_state = state.clone();
+    std::thread::spawn(move || {
+        loop {
+            std::thread::sleep(std::time::Duration::from_secs(30));
+            if let Ok(mut node) = sync_state.lock() {
+                if !node.peers.is_empty() {
+                    println!("[auto-sync] Checking peers for longer chain...");
+                    let peers = node.peers.clone();
+                    crate::sync::sync_with_peers(&mut node.chain, &peers);
+                }
+            }
+        }
+    });
+
     HttpServer::new(move || {
         App::new()
             .wrap(Cors::permissive())
