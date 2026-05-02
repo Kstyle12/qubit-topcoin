@@ -269,6 +269,41 @@ async fn get_recent_blocks(state: web::Data<Mutex<NodeState>>) -> HttpResponse {
     HttpResponse::Ok().json(recent)
 }
 
+
+async fn get_balances(state: web::Data<Mutex<NodeState>>) -> HttpResponse {
+    let node = state.lock().unwrap();
+    let mut balances: std::collections::HashMap<String, i64> = std::collections::HashMap::new();
+
+    for block in &node.chain.chain {
+        for tx in &block.transactions {
+            let sender = &tx.data.sender;
+            let recipient = &tx.data.recipient;
+            let amount = tx.data.amount as i64;
+
+            if sender != "NETWORK" && sender != "0" && sender != "COINBASE" {
+                *balances.entry(sender.clone()).or_insert(0) -= amount;
+            }
+            *balances.entry(recipient.clone()).or_insert(0) += amount;
+        }
+    }
+
+    let mut sorted: Vec<(String, i64)> = balances
+        .into_iter()
+        .filter(|(addr, bal)| *bal > 0 && addr != "0")
+        .collect();
+    sorted.sort_by(|a, b| b.1.cmp(&a.1));
+
+    let result: Vec<serde_json::Value> = sorted.iter().map(|(addr, bal)| {
+        serde_json::json!({
+            "address": addr,
+            "balance": bal,
+            "qtop": *bal as f64 / 100_000_000.0
+        })
+    }).collect();
+
+    HttpResponse::Ok().json(result)
+}
+
 pub async fn start_node(port: u16, miner_addr: Option<String>) -> std::io::Result<()> {
     println!("=========================================");
     println!("  QTOP NODE STARTING ON PORT {}", port);
@@ -319,6 +354,7 @@ pub async fn start_node(port: u16, miner_addr: Option<String>) -> std::io::Resul
             .route("/status",            web::get().to(get_status))
             .route("/chain",             web::get().to(get_chain))
             .route("/blocks/recent",     web::get().to(get_recent_blocks))
+            .route("/balances",           web::get().to(get_balances))
             .route("/mine",              web::get().to(mine))
             .route("/set_miner/{address}", web::post().to(set_miner_address))
             .route("/identity",          web::get().to(get_identity))
