@@ -89,11 +89,21 @@ async fn mine(state: web::Data<Mutex<NodeState>>) -> HttpResponse {
     let peers = node.peers.clone();
     drop(node);
 
+    // Push our chain to all peers
+    let chain_to_push = {
+        let node = state.lock().unwrap();
+        node.chain.chain.clone()
+    };
+
     for peer in &peers {
-        let _ = std::thread::spawn({
-            let peer = peer.clone();
-            move || { let _ = reqwest::blocking::get(format!("{}/peers/sync", peer)); }
-        }).join();
+        let peer = peer.clone();
+        let chain = chain_to_push.clone();
+        std::thread::spawn(move || {
+            let client = reqwest::blocking::Client::new();
+            let _ = client.post(format!("{}/chain/update", peer))
+                .json(&chain)
+                .send();
+        });
     }
 
     HttpResponse::Ok().json(serde_json::json!({
@@ -304,6 +314,23 @@ async fn get_balances(state: web::Data<Mutex<NodeState>>) -> HttpResponse {
     HttpResponse::Ok().json(result)
 }
 
+
+async fn receive_chain(
+    state: web::Data<Mutex<NodeState>>,
+    body: web::Json<Vec<crate::block::Block>>,
+) -> HttpResponse {
+    let mut node = state.lock().unwrap();
+    let incoming = body.into_inner();
+    if incoming.len() > node.chain.chain.len() {
+        println!("  Received longer chain from peer ({} blocks)", incoming.len());
+        node.chain.chain = incoming;
+        node.chain.mempool = vec![];
+        crate::storage::save_chain(&node.chain.chain);
+        return HttpResponse::Ok().json(serde_json::json!({"message": "Chain updated"}));
+    }
+    HttpResponse::Ok().json(serde_json::json!({"message": "Our chain is longer or equal"}))
+}
+
 pub async fn start_node(port: u16, miner_addr: Option<String>) -> std::io::Result<()> {
     println!("=========================================");
     println!("  QTOP NODE STARTING ON PORT {}", port);
@@ -378,6 +405,7 @@ pub async fn start_node(port: u16, miner_addr: Option<String>) -> std::io::Resul
             .route("/transactions/new",  web::post().to(new_transaction))
             .route("/peers/register",    web::post().to(register_peer))
             .route("/peers/sync",        web::get().to(sync_chain))
+            .route("/chain/update",       web::post().to(receive_chain))
     })
     .bind(format!("0.0.0.0:{}", port))?
     .run()
