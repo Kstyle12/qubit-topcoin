@@ -353,7 +353,7 @@ async function fetchNode() {
     if (!sr.ok) throw new Error();
     var s = await sr.json();
 
-    document.getElementById('node-status').textContent = 'Connected to local node — refreshing every 10s';
+    document.getElementById('node-status').textContent = 'Connected to Cori Testnet — refreshing every 10s';
     document.getElementById('s-height').textContent = s.blocks || '—';
     document.getElementById('s-diff').textContent = s.difficulty || '—';
     document.getElementById('s-peers').textContent = Array.isArray(s.peers) ? s.peers.length : 0;
@@ -377,7 +377,7 @@ async function fetchNode() {
         '<td style="font-family:monospace">' + (s.blocks || '—') + '</td>' +
         '<td><span class="confirmed">Active</span></td>' +
       '</tr>';
-    }).join('') : '<tr><td colspan="4" class="placeholder">No peers connected yet — waiting for Oracle node</td></tr>';
+    }).join('') : '<tr><td colspan="4" class="placeholder">No peers connected yet — mining nodes will appear here</td></tr>';
 
     var mined = (s.blocks || 0) * 50;
     var pct = Math.min((mined / 21000000 * 100), 100);
