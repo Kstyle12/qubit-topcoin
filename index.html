@@ -235,35 +235,19 @@ footer{padding:2rem 1.25rem}}
   </div>
 </div>
 <div class="full-bleed">
-  <div id="explorer" class="section-wrap">
-    <div class="label">Block explorer</div>
-    <h2 class="section-h">Cori testnet — live.</h2>
-    <p class="section-p" style="margin-bottom:0">Connect a local node on port 5003 to see real-time data.</p>
-    <div class="explorer-wrap">
-      <div class="ex-head">
-        <h3>Network status</h3>
-        <div class="live"><div class="live-d"></div>Cori testnet</div>
-      </div>
-      <div class="ex-stats">
-        <div class="ex-stat"><div class="ex-stat-l">Block height</div><div class="ex-stat-v" id="ex-height">—</div></div>
-        <div class="ex-stat"><div class="ex-stat-l">Difficulty</div><div class="ex-stat-v" id="ex-diff">—</div></div>
-        <div class="ex-stat"><div class="ex-stat-l">Peers</div><div class="ex-stat-v" id="ex-peers">—</div></div>
-        <div class="ex-stat"><div class="ex-stat-l">Block reward</div><div class="ex-stat-v">50 QTOP</div></div>
-      </div>
-      <div class="ex-body">
-        <div class="ex-panel">
-          <h4>Recent blocks</h4>
-          <div id="ex-blocks"><p style="font-size:13px;font-family:system-ui,sans-serif;color:#6B6B67">Run a local node on port 5003 to see live blocks.</p></div>
-        </div>
-        <div class="ex-panel">
-          <h4>Address lookup</h4>
-          <div class="search-row">
-            <input type="text" id="addr-in" placeholder="Enter QTOP address..."/>
-            <button onclick="lookup()">Look up</button>
-          </div>
-          <div id="addr-out" style="font-size:13px;font-family:system-ui,sans-serif;color:#6B6B67">Enter an address to check its balance.</div>
-        </div>
-      </div>
+  <div id="explorer" class="section-wrap" style="background:var(--bg-secondary);border-top:0.5px solid var(--border);border-bottom:0.5px solid var(--border)">
+    <div class="label">Block Explorer</div>
+    <div class="section-title" style="font-size:36px;font-weight:300;letter-spacing:-1px;margin-bottom:1rem">Cori testnet — live.</div>
+    <p class="section-sub">Real-time blocks, transactions, address balances, rich list and peer data. The Cori Testnet is active and open to all.</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:2.5rem">
+      <a class="btn-primary" href="https://kstyle12.github.io/qubit-topcoin/explorer.html" target="_blank">Open block explorer ↗</a>
+      <a class="btn-secondary" href="https://qtop-testnet.duckdns.org/status" target="_blank">View live node ↗</a>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:var(--border);border:0.5px solid var(--border);border-radius:14px;overflow:hidden">
+      <div style="background:var(--bg);padding:1.5rem"><div class="label" style="margin-bottom:6px">Node</div><div style="font-family:monospace;font-size:12px;color:#6B6B67">qtop-testnet.duckdns.org</div></div>
+      <div style="background:var(--bg);padding:1.5rem"><div class="label" style="margin-bottom:6px">Protocol</div><div style="font-size:14px;font-weight:500">HTTPS / REST</div></div>
+      <div style="background:var(--bg);padding:1.5rem"><div class="label" style="margin-bottom:6px">Status</div><div style="font-size:14px;font-weight:500;color:#1D9E75">● Live</div></div>
+      <div style="background:var(--bg);padding:1.5rem"><div class="label" style="margin-bottom:6px">Network</div><div style="font-size:14px;font-weight:500">Cori Testnet</div></div>
     </div>
   </div>
 </div>
